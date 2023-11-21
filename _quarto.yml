@@ -1,0 +1,19 @@
+project:
+  type: website
+  output-dir: docs
+
+
+website:
+  title: "today"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - homework.qmd
+
+format:
+  html:
+    theme: cerulean
+    toc: true
+
+editor: source
