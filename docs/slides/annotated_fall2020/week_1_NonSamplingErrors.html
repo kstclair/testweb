@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Stat 260, St.&nbsp;Clair">
+
+<title>today - Non-Sampling Errors</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">today</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html" rel="" target="">
+ <span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../homework.html" rel="" target="">
+ <span class="menu-text">homework</span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools ms-auto">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#content" id="toc-content" class="nav-link active" data-scroll-target="#content">Content:</a></li>
+  <li><a href="#non-sampling-errors" id="toc-non-sampling-errors" class="nav-link" data-scroll-target="#non-sampling-errors">Non-sampling Errors</a></li>
+  <li><a href="#selection-bias" id="toc-selection-bias" class="nav-link" data-scroll-target="#selection-bias">Selection bias</a></li>
+  <li><a href="#selection-bias-1" id="toc-selection-bias-1" class="nav-link" data-scroll-target="#selection-bias-1">Selection bias</a></li>
+  <li><a href="#selection-bias-2" id="toc-selection-bias-2" class="nav-link" data-scroll-target="#selection-bias-2">Selection bias</a></li>
+  <li><a href="#correcting-for-selection-biases" id="toc-correcting-for-selection-biases" class="nav-link" data-scroll-target="#correcting-for-selection-biases">“Correcting” for selection biases</a></li>
+  <li><a href="#measurement-errors" id="toc-measurement-errors" class="nav-link" data-scroll-target="#measurement-errors">Measurement Errors</a></li>
+  <li><a href="#measurement-errors-1" id="toc-measurement-errors-1" class="nav-link" data-scroll-target="#measurement-errors-1">Measurement Errors</a></li>
+  <li><a href="#measurement-errors-2" id="toc-measurement-errors-2" class="nav-link" data-scroll-target="#measurement-errors-2">Measurement Errors</a></li>
+  <li><a href="#measurement-errors-3" id="toc-measurement-errors-3" class="nav-link" data-scroll-target="#measurement-errors-3">Measurement Errors</a></li>
+  <li><a href="#questionnaire-design---some-topics" id="toc-questionnaire-design---some-topics" class="nav-link" data-scroll-target="#questionnaire-design---some-topics">Questionnaire Design - some topics</a></li>
+  <li><a href="#questionnaire-design---some-topics-1" id="toc-questionnaire-design---some-topics-1" class="nav-link" data-scroll-target="#questionnaire-design---some-topics-1">Questionnaire Design - some topics</a></li>
+  <li><a href="#questionnaire-design---some-topics-2" id="toc-questionnaire-design---some-topics-2" class="nav-link" data-scroll-target="#questionnaire-design---some-topics-2">Questionnaire Design - some topics</a></li>
+  <li><a href="#questionnaire-design---some-topics-3" id="toc-questionnaire-design---some-topics-3" class="nav-link" data-scroll-target="#questionnaire-design---some-topics-3">Questionnaire Design - some topics</a></li>
+  <li><a href="#questionnaire-design---some-topics-4" id="toc-questionnaire-design---some-topics-4" class="nav-link" data-scroll-target="#questionnaire-design---some-topics-4">Questionnaire Design - some topics</a></li>
+  <li><a href="#questionnaire-design---some-topics-5" id="toc-questionnaire-design---some-topics-5" class="nav-link" data-scroll-target="#questionnaire-design---some-topics-5">Questionnaire Design - some topics</a></li>
+  <li><a href="#sampling-biases-vs.-estimator-biases" id="toc-sampling-biases-vs.-estimator-biases" class="nav-link" data-scroll-target="#sampling-biases-vs.-estimator-biases">Sampling biases vs.&nbsp;estimator biases</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Non-Sampling Errors</h1>
+<p class="subtitle lead">Week 1</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Stat 260, St.&nbsp;Clair </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="content" class="level1">
+<h1>Content:</h1>
+<ul>
+<li><p>Non-sampling errors</p></li>
+<li><p>Selection biases</p></li>
+<li><p>Measurement errors</p></li>
+</ul>
+<hr>
+</section>
+<section id="non-sampling-errors" class="level1">
+<h1>Non-sampling Errors</h1>
+<ul>
+<li><p><strong>Non-sampling Error</strong> Systematic variation between sample data and a population data that can’t be explained by sampling error. Can introduce <em>bias</em> into results.</p>
+<ul>
+<li><p>selection bias</p></li>
+<li><p>measurement error</p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="selection-bias" class="level1">
+<h1>Selection bias</h1>
+<ul>
+<li><strong>Undercoverage</strong> Occurs when the sampling frame does not cover the targeted population.
+<ul>
+<li>units in the undercoverage part of the population have <strong>no chance</strong> of being selected for the sample.</li>
+</ul></li>
+</ul>
+<p><img src="Frame.PNG" style="width: 80%"></p>
+<hr>
+</section>
+<section id="selection-bias-1" class="level1">
+<h1>Selection bias</h1>
+<ul>
+<li><strong>Nonresponse</strong> Failure to collect responses from all observation units selected for a survey.</li>
+</ul>
+<p><img src="Frame.PNG" style="width: 80%"></p>
+<hr>
+</section>
+<section id="selection-bias-2" class="level1">
+<h1>Selection bias</h1>
+<ul>
+<li><strong>Nonresponse</strong>
+<ul>
+<li><p>can’t contact (no substitutions!!)</p></li>
+<li><p>can’t respond (e.g.&nbsp;illness, lack of knowledge)</p></li>
+<li><p>refuse to answer (e.g.&nbsp;privacy, fear, embarrassment)</p></li>
+<li><p>effect not easily measured but nonresponse rates can be reduced by careful planning (callbacks, mailings, incentives, shorten interview length)</p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="correcting-for-selection-biases" class="level1">
+<h1>“Correcting” for selection biases</h1>
+<ul>
+<li><p>Many large-scale surveys <strong>“weight”</strong> data from respondents to be “more representative” of the target population.</p>
+<ul>
+<li>More during week 8</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="measurement-errors" class="level1">
+<h1>Measurement Errors</h1>
+<ul>
+<li><p><strong>Measurement Instrument Errors</strong> Occur due to</p>
+<ul>
+<li><p>inaccurate measurement tools/machines</p></li>
+<li><p>poorly worded questions</p></li>
+<li><p>inappropriate questions/questionnaire design, etc….</p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="measurement-errors-1" class="level1">
+<h1>Measurement Errors</h1>
+<ul>
+<li><p>In ecology, we often have <strong>detection</strong> errors because we don’t detect every animal/plant that we are looking for</p>
+<ul>
+<li><p>e.g.&nbsp;moose are hidden by trees and don’t get counted</p></li>
+<li><p>a raw count of moose in a plot will <strong>underestimate</strong> the total number of moose in the plot</p></li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="measurement-errors-2" class="level1">
+<h1>Measurement Errors</h1>
+<ul>
+<li><strong>Interviewer bias</strong> Occurs because people tend to give different answers to different interviewers.</li>
+</ul>
+<hr>
+</section>
+<section id="measurement-errors-3" class="level1">
+<h1>Measurement Errors</h1>
+<ul>
+<li><strong>Response Errors</strong> People differ in motivation and ability to respond to survey questions.</li>
+</ul>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Wording of Questions</strong></p>
+<ul>
+<li><p>Keep questions simple but specific.</p></li>
+<li><p>Make sure all terms or measurement amounts are well-defined.</p></li>
+</ul>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics-1" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Wording of Questions</strong></p>
+<ul>
+<li><p>Don’t use leading or loaded questions or words.</p></li>
+<li><p>Don’t use <strong>double-barreled</strong> questions that deal with 2 or more issues.</p>
+<ul>
+<li>2019 Trump tweet: “Wow! A Suffolk/USA Today Poll, just out, states, “50% of Americans AGREE that Robert Mueller’s investigation is a Witch Hunt.”</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics-2" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Wording of Questions</strong></p>
+<ul>
+<li><p>Don’t use leading or loaded questions or words.</p></li>
+<li><p>Don’t use <strong>double-barreled</strong> questions that deal with 2 or more issues.</p>
+<ul>
+<li><p>2019 Trump tweet: “Wow! A Suffolk/USA Today Poll, just out, states, “50% of Americans AGREE that Robert Mueller’s investigation is a Witch Hunt.”</p></li>
+<li><p>but here is the question asked: “President Trump has called the Special Counsel’s investigation a ‘witch hunt’ <strong>and</strong> said he’s been subjected to more investigations than previous presidents because of politics. Do you agree?”</p></li>
+</ul></li>
+</ul>
+<p>.footnote[https://www.factcheck.org/2019/03/trump-touts-questionable-survey-results/]</p>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics-3" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Question Ordering</strong></p>
+<ul>
+<li><p>General vs.&nbsp;Specific: usually best to ask general questions prior to specific questions</p></li>
+<li><p>Order of possible responses</p>
+<ul>
+<li>verbal questions: response more likely to be the last option in the list<br>
+</li>
+<li>written questions: response more likely to be the first option in the list</li>
+</ul></li>
+<li><p>Solutions: vary ordering, repeat question</p></li>
+</ul>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics-4" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Open vs.&nbsp;Closed Questions</strong></p>
+<ul>
+<li><p>Open question - respondents not prompted with categories for response. Good for exploratory surveys or sensitive questions but can be hard to analyze.</p></li>
+<li><p>Closed question - respondents given a list of possible responses to choose from.</p></li>
+</ul>
+<hr>
+</section>
+<section id="questionnaire-design---some-topics-5" class="level1">
+<h1>Questionnaire Design - some topics</h1>
+<p><strong>Response Options for Closed Questions</strong></p>
+<ul>
+<li><p>Can’t list all possible responses but pretesting of questions should narrow the list to the most common responses.</p></li>
+<li><p>Have ``other” category when appropriate.</p></li>
+<li><p>Detailed/narrow topic questions: Provide a screening question to assess an individuals knowledge of a specific issue.</p></li>
+</ul>
+<hr>
+</section>
+<section id="sampling-biases-vs.-estimator-biases" class="level1">
+<h1>Sampling biases vs.&nbsp;estimator biases</h1>
+<ul>
+<li><p>Non-sampling errors can introduce biases into our conclusions.</p>
+<ul>
+<li>extremely hard to actually quantify</li>
+</ul></li>
+<li><p>When a <strong>probability sampling design</strong> is used, we can quantify (or approximate) an <strong>estimator’s bias</strong></p>
+<ul>
+<li>e.g.&nbsp;<em>Does this estimation method systematically over- or under-estimate the population parameter?</em></li>
+<li><strong>Estimator bias</strong> assumes <strong>no non-sampling errors</strong>!!</li>
+</ul></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

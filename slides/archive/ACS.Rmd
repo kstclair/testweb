@@ -1,0 +1,531 @@
+---
+title: "Adaptive Cluster Sampling"
+subtitle: 
+author: "Math 255, St. Clair"
+output:
+  xaringan::moon_reader:
+    chakra: libs/remark-latest.min.js
+    css: [default, rladies,hygge]    
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.align = 'center', dev='svg', fig.height = 5, fig.width = 5)
+library(tidyverse)
+```
+```{r, include=FALSE}
+d <- data.frame(x_coord=1:5, y_coord=1:5)
+d <- expand(d,y_coord,x_coord)
+d$count <- c(0,0,0,0,0,
+             0,0,0,0,0,
+             3,7,0,3,0,
+             0,0,0,4,2,
+             0,0,0,0,2)
+d$sampled <- c(0,0,0,0,0,
+               1,1,0,0,1,
+               1,1,1,0,0,
+               1,1,0,0,0,
+               0,0,1,0,0)
+d$networks <- c("none","none","none","none","none",
+                "none","none","none","none","net_2",
+                "net_3","net_3","none","none","none",
+                "none","none","none","none","none",
+                "none","none","net_1","none","none")
+d$waves <- "none"
+d$waves[c(10,11,23)] <- "srs"
+d$waves[c(6,12,16)] <- "wave 1"
+d$waves[c(7,13,17)] <- "wave 2"
+d$allnet <- "single"
+d$allnet[c(11,12)] <- "network 1"
+d$allnet[c(14,19,20,25)] <- "network 2"
+```
+
+
+## Adaptive designs
+
+.large[
+- *Adaptive* design: sampling units are determined "on the fly" based on observed characteristics of previously sampled units 
+]
+--
+.large[
+- Adaptive *cluster* sampling (ACS): goal is to sample rare, clustered populations
+
+- *cluster* denotes a spatial, social or genetic "closeness"
+
+    - rare animal/plant species that are spatially clustered
+    - rare disease/trait that are spatially *or* socially or genetically clustered
+]
+
+--
+
+.large[
+- Idea of ACS:
+
+    (1) get an initial SRS of units
+    
+    (2) if sampled unit $i$ meet a condition $C$ and add $i$s neighboring units to the sample
+    
+    (3) repeat (2) until no more units can be added
+]
+
+---
+
+## Example
+
+
+.large[
+A simplified "strawberry field" example: how many plants (dots) in the field?
+]
+```{r, echo=FALSE}
+set.seed(12345)
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_point(data=uncount(d, count), aes(x=x_coord- runif(10,0.1,.9), y=y_coord- runif(10,0.1,.9)), color="red") + 
+  scale_x_continuous(limits=c(0,5)) + scale_y_continuous(limits=c(0,5))
+```
+
+---
+## Example
+
+.large[
+ACS design:
+
+- Divide the region into grid plots to create a sampling frame
+
+- Sampling unit: grid plot (N=25)
+]
+---
+
+## Example
+
+.large[
+Sampling frame grid:
+]
+```{r, echo=FALSE}
+set.seed(12345)
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_point(data=uncount(d, count), aes(x=x_coord- runif(10,0.1,.9), y=y_coord- runif(10,0.1,.9)), color="red")
+```
+
+---
+## Example
+
+.large[
+ACS design:
+
+- define a neighborhood: 
+  
+    - plot $i$'s neighbors are cells to the north/south/east/west
+
+]
+---
+
+## Example
+
+.large[
+Neighborhood of plot $i$
+
+]
+
+```{r, echo=FALSE}
+neigh <- data.frame(x=c(3,3,3,2,4), y=c(2,1,3,2,2), name=c("plot i", rep("neighbor",4)))
+set.seed(12345)
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_point(data=uncount(d, count), aes(x=x_coord- runif(10,0.1,.9), y=y_coord- runif(10,0.1,.9)), color="red") +
+  geom_text(data=neigh, aes(x=x,y=y, label=name, color=name), size=5, show.legend=FALSE, nudge_x  = -.5, nudge_y = -.5) + 
+  scale_colour_manual(values = c("blue", "red"))
+```
+
+---
+## Example
+
+.large[
+ACS design:
+
+- Determine condition $C$: we want to find the plots with plants!
+
+    - $y_i =$ number of plants in plot $i$
+    - $C: y_i > 0$, add neighbors if plot $i$ contains plants
+
+- All that matters in the population is units, neighborhoods and $y_i$ values
+]
+
+---
+
+## Example
+
+.large[
+
+Let's just look at $y_i$s 
+
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), size=13)
+
+```
+---
+## Example
+
+.large[
+ACS design:
+
+(1) Initial SRS of $n_1=3$ plots and count plants $y_i$
+
+
+(2) **adaptively add units:** If $y_i > 0$, add plot $i$'s neighbors
+
+(3) Repeat (2) until no more neighbors are adaptively added 
+- all neighbors have $y_i=0$
+]
+
+
+
+
+---
+
+## Example
+
+.large[
+(1) Initial SRS of size 3 is highlighted 
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), color="black", size=10) + 
+  geom_text(data=filter(d, waves =="srs"), aes(x=x_coord - .5,y=y_coord - .2, label=waves), size=6,  color="red") +   
+  geom_text(data=filter(d,waves =="srs"), aes(x=x_coord-.5, y=y_coord-.5, label=count), size=10, color="red")
+```
+
+
+
+---
+
+## Example
+
+.large[
+(2) add first round of neighbors:
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), color="black", size=10) + 
+  geom_text(data=filter(d, waves %in% c("srs","wave 1")), aes(x=x_coord - .5,y=y_coord - .2, label=waves, color=waves), size=6, show.legend=FALSE) +   
+  geom_text(data=filter(d,waves %in% c("srs","wave 1")), aes(x=x_coord-.5, y=y_coord-.5, label=count, color=waves), size=10, show.legend=FALSE)+ 
+  scale_colour_manual(values = c("red", "blue"))
+```
+
+---
+
+## Example
+
+.large[
+(2) add second (and final!) round of neighbors:
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), color="black", size=10) + 
+  geom_text(data=filter(d, waves %in% c("srs","wave 1", "wave 2")), aes(x=x_coord - .5,y=y_coord - .2, label=waves, color=waves), size=6, show.legend=FALSE) +   
+  geom_text(data=filter(d,waves %in% c("srs","wave 1", "wave 2")), aes(x=x_coord-.5, y=y_coord-.5, label=count, color=waves), size=10, show.legend=FALSE)+ 
+  scale_colour_manual(values = c("red", "blue", "darkgreen"))
+```
+
+---
+
+## Estimation
+
+.large[
+- Units have unequal selection probabilities
+
+    - need to use a Horvitz-Thompson estimate of total!
+    - units with $y_i >0$ have higher inclusion probabilities
+]
+
+--
+
+.large[
+- Inclusion probability for unit $i$ looks like
+
+$$\pi_i = P(\textrm{unit } i \textrm{ is in the SRS or adaptively added})$$
+
+]
+
+--
+
+.large[
+**Problem:** unless we see the *entire population*, we can't compute all $\pi_i$ for observed units
+
+- can't tell if unit $i$ borders a cluster unless we've seen all units around it
+]
+
+---
+
+## Networks instead of plots
+
+.large[
+**Solution:** define observations in terms of *networks*
+
+- **Network:** a cluster of units generated by selection of any of the units within the cluster
+
+- networks either
+    - contain units that all satisfy condition $C$
+    - are a single unit where $C$ is not satisfied
+]
+
+---
+
+## Example
+
+.large[
+Two networks satisfy $y_i >0$, 19 other networks are single plot with $y_i=0$.
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), color="black", size=10) + 
+  geom_text(data=d, aes(x=x_coord - .5,y=y_coord - .2, label=allnet, color=allnet), size=4, show.legend=FALSE) +   
+  scale_colour_manual(values = c("red", "blue", "darkgreen"))
+```
+
+---
+
+## Networks
+
+.large[
+- Population has $K$ distinct networks
+
+    - Ex: $K = 19 + 2 = 21$
+
+- Sample has $\kappa$ distinct networks
+
+    - Ex: $\kappa=3$
+]
+
+---
+
+## Example
+
+.large[
+Three networks were sampled
+]
+
+```{r, echo=FALSE}
+ggplot(expand(data.frame(x=0:5,y=0:5),x,y), aes(x,y)) + 
+  geom_vline(aes(xintercept=x)) +   geom_hline(aes(yintercept=y)) +
+  geom_text(data=d, aes(x=x_coord-.5, y=y_coord-.5, label=count), color="black", size=10) + 
+  geom_text(data=filter(d, networks != "none"), aes(x=x_coord - .5,y=y_coord - .2, label=networks, color=networks), size=5, show.legend=FALSE) +   
+  scale_colour_manual(values = c("red", "blue", "darkgreen"))
+```
+
+
+---
+
+## Networks
+
+
+.large[
+- Let $y^*_k$ be the total response of all units in network $k$
+$$y^*_k = \sum_{i \in net_k} y_i$$
+
+- We still have the same population total:
+$$t = \sum_{i=1}^N y_i = \sum_{k=1}^{K} y^*_k$$
+
+- Use HT estimator to weight the observed network totals $y^*_k$
+]
+
+---
+
+## Network inclusion probabililities
+
+.large[
+- $\alpha_k$ is the inclusion probability for network $k$:
+
+    - network $k$ is included in the ACS if **at least one** of its units is in the **initial SRS**
+]
+
+--
+.large[
+- Compute $\alpha_k$ using the complement rule:
+
+$$\alpha_{k} = 1- P(\textrm{no units in } k \textrm{ are in the initial SRS})$$
+]
+
+---
+
+## Network inclusion probabililities
+ 
+
+.large[
+- There are $\binom{N}{n_1}$ possible SRS of size $n_1$
+]
+
+--
+.large[
+- $x_k =$ number of units in network $k$
+
+- There are $\binom{N-x_k}{n_1}$ possible SRS of size $n_1$ that **don't contain any units** in network $K$
+]
+
+--
+
+.large[
+$$\alpha_{k} = 1- P(\textrm{no units in } k \textrm{ are in the initial SRS}) = 1- \dfrac{\binom{N-x_{k}}{n_{1}}}{\binom{N}{n_{1}}}$$
+]
+
+
+---
+
+## Example
+
+.large[
+- Three sampled networks:
+
+- $net_1 = \{1\}$, $y^*_1 = 0$, $x_1 = 1$, $\alpha_1  = 1- \dfrac{\binom{25-1}{3}}{\binom{25}{3}} = 0.12$
+
+- $net_2 = \{2\}$, $y^*_2 = 0$, $x_2 = 1$, $\alpha_2  = 1- \dfrac{\binom{25-1}{3}}{\binom{25}{3}} = 0.12$
+]
+--
+
+.large[
+- $net_3 = \{3,4\}$, $y^*_3 = 10$, $x_1 = 2$, $\alpha_3  = 1- \dfrac{\binom{25-2}{3}}{\binom{25}{3}} = 0.23$
+]
+
+--
+
+.large[
+- Estimated total:
+$$\hat{t}_{HT} = \sum_{k=1}^{\kappa} \dfrac{y^*_k}{\alpha_k}= \dfrac{0}{0.12} +  \dfrac{0}{0.12} +  \dfrac{10}{0.23} = 43.48$$
+]
+---
+
+## Network inclusion probabililities
+
+.large[
+- Joint inclusion probability that both networks $j$ and $k$ are in the ACS
+
+    - Use the rule: $P(j \textrm{ or } k) = P(j) + P(k) - P(j \textrm{ and } k)$
+]
+
+--
+.large[
+- So the probability of $j$ **and** $k$ is
+\begin{align*}
+\alpha_{jk} & = \alpha_j + \alpha_k -  P(j \textrm{ or } k \textrm{ in ACS}) \\
+& =  \alpha_j + \alpha_k - (1-P(\textrm{neither } j,k \textrm{ in ACS})) \\ 
+& =  \alpha_j + \alpha_k - \left( 1- \dfrac{\binom{N-x_j - x_{k}}{n_{1}} }{\binom{N}{n_{1}}} \right)
+\end{align*}
+
+]
+
+---
+
+## Example
+
+.large[
+- Joint prob for networks 1 and 2:
+$$\alpha_{12} = 0.12 + 0.12 - \left( 1- \dfrac{\binom{25 - 1 - 1}{3} }{\binom{25}{3}} \right) = 0.01$$
+
+- Joint prob for networks 1 and 3, and also 2 and 3:
+$$\alpha_{13} = \alpha_{23} = 0.12 + 0.23 - \left( 1- \dfrac{\binom{25 - 1 - 2}{3} }{\binom{25}{3}} \right) = 0.01957$$
+]
+--
+
+.large[
+- SE for $\hat{t}_{HT}$: only need to sum over non-zero network responses (and all joint products are 0!)
+$$SE_{HT}(\hat{t}_{HT}) = \sqrt{\dfrac{1-0.23}{0.23^2}10^2 + 2(0)}= 38.15$$
+]
+
+---
+
+## Example
+
+.large[
+- To estimate in R, enter network level data: $y^*_k$ and $x_k$
+```{r}
+acs_data <- data.frame(
+  y_net = c(0,0,10),
+  x_net = c(1,1,2) )
+```
+]
+--
+
+.large[
+- Then get single network inclusion probabilities:
+```{r}
+n1 <- 3
+N <- 25
+acs_data$pi_single <- 1- choose(N - acs_data$x_net,n1)/choose(N,n1)
+acs_data
+```
+]
+
+---
+
+## Example
+
+.large[
+- Joint inclusion probabilities take more work
+    - `jnt_fun` computes $\alpha_{jk}$ for all $k=1,\dotsc, \kappa$
+```{r}
+jnt_fun <- function(xj,x=acs_data$x_net,N=25,n1=3) 
+{ 1- choose(N - xj,n1)/choose(N,n1) - choose(N - x,n1)/choose(N,n1) + 
+    choose(N - xj-x,n1)/choose(N,n1)} 
+jnt_fun(xj = 1)
+jnt_fun(xj = 2)
+```
+]
+
+---
+
+
+## Example
+
+.large[
+- Fill the rows of the inclusion matrix:
+```{r}
+jnt_mat <- matrix(
+  c(jnt_fun(acs_data$x_net[1]), 
+  jnt_fun(acs_data$x_net[2]), 
+  jnt_fun(acs_data$x_net[3])), 
+  byrow=TRUE, nrow=3)
+diag(jnt_mat) <- acs_data$pi_single  # fix diagonals
+jnt_mat
+```
+
+]
+
+---
+
+## Example
+
+.large[
+- Then use "pps" design:
+```{r}
+library(survey)
+acs_design <- svydesign(id = ~1, fpc= ~pi_single, 
+                        pps=ppsmat(jnt_mat), data=acs_data)
+svytotal(~y_net, acs_design)
+```
+
+- Again, get $\hat{t}_{HT} = 43.48$ and SE of 38.15.
+
+]
+
+--
+
+.large[
+- Note: Unless $n$ is very large and clusters not "too clustered", you can't trust conventional confidence intervals for ASC data!
+]

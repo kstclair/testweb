@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Survey package: unequal probabilities of selection (WOR)</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# <code>Survey</code> package: unequal probabilities of selection (WOR)
+## Week 9
+### Stat 260, St. Clair
+
+---
+
+
+
+
+## Unequal probability sampling
+
+What you need:
+
+- `\(\pi_i\)` inclusion probabilities for selected units
+
+- `\(\pi_{ij}\)` joint inclusion probabilities for selected units
+
+  - optional, if not included you get *with* replacement overestimation of variance
+
+
+---
+
+## Design object: Unequal probability sampling
+
+
+- `id` PSU id (often just `id = ~1`)
+
+- `fpc` inclusion probabilities `\(\pi_{i}\)` for your sampled units
+
+- `pps` a `ppsmat` object that contains the inclusion probability matrix 
+
+  - something like `pps=ppsmat(mat)` where `mat` is a matrix with `\(\pi_{ij}\)` on the off-diagonals and `\(\pi_i\)` on the diagonals.
+  
+  - if left out, you get the without replacement SE (Lohr equation 6.24)
+  
+- `variance` (optional) specifies variance formula
+  - default is Horvitz-Thompson SE estimate (Lohr equation 6.22)
+  
+  - `YG` is Sen-Yates-Grundy (SYG) formula (Lohr equation 6.23)
+
+
+- `weights` are not specified!
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+**Design**
+
+- Sample 15 counties in 1992 using initial selection probabilities that are proportional to the 1987 farming acreage (`acres87`) in each county (WOR)
+
+
+```r
+&gt; agpps&lt;- read.csv("http://math.carleton.edu/kstclair/data/agpps.csv")
+&gt; dplyr::glimpse(agpps)
+Rows: 15
+Columns: 24
+$ county   &lt;chr&gt; "ST MARTI", "HALIFAX", "DOUGLAS", "WASHINGT", "COCHRAN", "...
+$ state    &lt;chr&gt; "LA", "NC", "MO", "IL", "TX", "IA", "MN", "WY", "TX", "KS"...
+$ farms92  &lt;int&gt; 274, 346, 1187, 831, 227, 812, 947, 207, 1576, 429, 199, 2...
+$ largef92 &lt;int&gt; 18, 70, 33, 57, 122, 73, 74, 61, 116, 177, 48, 81, 388, 16...
+$ acres92  &lt;int&gt; 70936, 204443, 300970, 297003, 370572, 353683, 395023, 397...
+$ acres87  &lt;int&gt; 73265, 208333, 295392, 315971, 330711, 344010, 368115, 391...
+$ sizemeas &lt;int&gt; 73265, 208333, 295392, 315971, 330711, 344010, 368115, 391...
+$ pii      &lt;dbl&gt; 0.001137612, 0.003234862, 0.004586659, 0.004906196, 0.0051...
+$ weight   &lt;dbl&gt; 879.03419, 309.13220, 218.02364, 203.82389, 194.73933, 187...
+$ jtprob1  &lt;dbl&gt; 0.0000e+00, 3.4500e-06, 4.9000e-06, 5.2400e-06, 5.4800e-06...
+$ jtprob2  &lt;dbl&gt; 3.45e-06, 0.00e+00, 1.39e-05, 1.49e-05, 1.56e-05, 1.62e-05...
+$ jtprob3  &lt;dbl&gt; 0.000004900, 0.000013900, 0.000000000, 0.000021100, 0.0000...
+$ jtprob4  &lt;dbl&gt; 0.000005240, 0.000014900, 0.000021100, 0.000000000, 0.0000...
+$ jtprob5  &lt;dbl&gt; 0.000005480, 0.000015600, 0.000022100, 0.000023700, 0.0000...
+$ jtprob6  &lt;dbl&gt; 0.000005700, 0.000016200, 0.000023000, 0.000024600, 0.0000...
+$ jtprob7  &lt;dbl&gt; 0.000006100, 0.000017400, 0.000024600, 0.000026300, 0.0000...
+$ jtprob8  &lt;dbl&gt; 0.000006480, 0.000018400, 0.000026100, 0.000028000, 0.0000...
+$ jtprob9  &lt;dbl&gt; 0.000008530, 0.000024300, 0.000034400, 0.000036800, 0.0000...
+$ jtprob10 &lt;dbl&gt; 0.000009660, 0.000027500, 0.000038900, 0.000041700, 0.0000...
+$ jtprob11 &lt;dbl&gt; 0.000011146, 0.000031700, 0.000045000, 0.000048100, 0.0000...
+$ jtprob12 &lt;dbl&gt; 0.000014500, 0.000041200, 0.000058400, 0.000062446, 0.0000...
+$ jtprob13 &lt;dbl&gt; 0.000016500, 0.000046800, 0.000066400, 0.000071000, 0.0000...
+$ jtprob14 &lt;dbl&gt; 0.000017100, 0.000048700, 0.000069000, 0.000073900, 0.0000...
+$ jtprob15 &lt;dbl&gt; 0.000031600, 0.000089900, 0.000127473, 0.000136358, 0.0001...
+```
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `id`: counties so could be `~1` or `~county`
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `fpc`: `pii` gives the county inclusion probabilities 
+
+
+```r
+&gt; ggplot(agpps, aes(x = acres87, y = pii)) + 
++   geom_point()
+```
+
+![](week_9_SurveyUnequalProbs_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `pps`: joint inclusion probs are given by the columns `jtprob1` - `jtprob15`
+
+- For example,  `\(\pi_{12,15} = \pi_{15,12} = 0.000377359\)`
+
+```r
+&gt; agpps$jtprob12[15]   # pi_12,15
+[1] 0.000377359
+&gt; agpps$jtprob15[12]   # pi_15,12
+[1] 0.000377359
+```
+
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `pps`: we need a matrix
+
+- Columns 10 - 24 are the joint probs:
+
+```r
+&gt; incl_mat&lt;- as.matrix(agpps[,10:24])  
+```
+
+- Then we need to fill in unit inclusion probs on the diagonal:
+
+```r
+&gt; diag(incl_mat) &lt;- agpps$pii
+&gt; incl_mat
+          jtprob1     jtprob2     jtprob3     jtprob4     jtprob5     jtprob6
+ [1,] 0.001137612 0.000003450 0.000004900 0.000005240 0.000005480 0.000005700
+ [2,] 0.000003450 0.003234862 0.000013900 0.000014900 0.000015600 0.000016200
+ [3,] 0.000004900 0.000013900 0.004586659 0.000021100 0.000022100 0.000023000
+ [4,] 0.000005240 0.000014900 0.000021100 0.004906196 0.000023700 0.000024600
+ [5,] 0.000005480 0.000015600 0.000022100 0.000023700 0.005135069 0.000025700
+ [6,] 0.000005700 0.000016200 0.000023000 0.000024600 0.000025700 0.005341568
+ [7,] 0.000006100 0.000017400 0.000024600 0.000026300 0.000027600 0.000028700
+ [8,] 0.000006480 0.000018400 0.000026100 0.000028000 0.000029300 0.000030400
+ [9,] 0.000008530 0.000024300 0.000034400 0.000036800 0.000038500 0.000040100
+[10,] 0.000009660 0.000027500 0.000038900 0.000041700 0.000043600 0.000045400
+[11,] 0.000011146 0.000031700 0.000045000 0.000048100 0.000050300 0.000052400
+[12,] 0.000014500 0.000041200 0.000058400 0.000062446 0.000065400 0.000068000
+[13,] 0.000016500 0.000046800 0.000066400 0.000071000 0.000074300 0.000077300
+[14,] 0.000017100 0.000048700 0.000069000 0.000073900 0.000077300 0.000080415
+[15,] 0.000031600 0.000089900 0.000127473 0.000136358 0.000142722 0.000148465
+          jtprob7     jtprob8     jtprob9    jtprob10    jtprob11    jtprob12
+ [1,] 0.000006100 0.000006480 0.000008530 0.000009660 0.000011146 0.000014500
+ [2,] 0.000017400 0.000018400 0.000024300 0.000027500 0.000031700 0.000041200
+ [3,] 0.000024600 0.000026100 0.000034400 0.000038900 0.000045000 0.000058400
+ [4,] 0.000026300 0.000028000 0.000036800 0.000041700 0.000048100 0.000062446
+ [5,] 0.000027600 0.000029300 0.000038500 0.000043600 0.000050300 0.000065400
+ [6,] 0.000028700 0.000030400 0.000040100 0.000045400 0.000052400 0.000068000
+ [7,] 0.005715855 0.000032600 0.000042900 0.000048500 0.000056024 0.000072800
+ [8,] 0.000032600 0.006072270 0.000045600 0.000051600 0.000059500 0.000077300
+ [9,] 0.000042900 0.000045600 0.007990101 0.000067900 0.000078300 0.000101735
+[10,] 0.000048500 0.000051600 0.000067900 0.009043974 0.000088700 0.000115171
+[11,] 0.000056024 0.000059500 0.000078300 0.000088700 0.010440319 0.000132984
+[12,] 0.000072800 0.000077300 0.000101735 0.000115171 0.000132984 0.013558648
+[13,] 0.000082700 0.000087900 0.000115684 0.000130963 0.000151218 0.000196509
+[14,] 0.000086100 0.000091400 0.000120326 0.000136218 0.000157286 0.000204394
+[15,] 0.000158874 0.000168787 0.000222149 0.000251490 0.000290387 0.000377359
+         jtprob13    jtprob14    jtprob15
+ [1,] 0.000016500 0.000017100 0.000031600
+ [2,] 0.000046800 0.000048700 0.000089900
+ [3,] 0.000066400 0.000069000 0.000127473
+ [4,] 0.000071000 0.000073900 0.000136358
+ [5,] 0.000074300 0.000077300 0.000142722
+ [6,] 0.000077300 0.000080415 0.000148465
+ [7,] 0.000082700 0.000086100 0.000158874
+ [8,] 0.000087900 0.000091400 0.000168787
+ [9,] 0.000115684 0.000120326 0.000222149
+[10,] 0.000130963 0.000136218 0.000251490
+[11,] 0.000151218 0.000157286 0.000290387
+[12,] 0.000196509 0.000204394 0.000377359
+[13,] 0.015417708 0.000232522 0.000429291
+[14,] 0.000232522 0.016036380 0.000446588
+[15,] 0.000429291 0.000446588 0.029606891
+```
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+
+Estimating total farm acres  in 1992: `\(\hat{t}_{HT} = 992,665,088\)` with a SE of `\(SE_{HT}(\hat{t}_{HT}) = 73,550,378\)`
+
+
+```r
+&gt; ag_pps&lt;- svydesign(id = ~1, 
++                    fpc = ~pii,  
++                    pps = ppsmat(incl_mat), 
++                    data = agpps) ## HT
+&gt; svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+            total        SE   DEff
+acres92 992665088  73550378 0.0063
+```
+
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+Changing how the SE is estimated to the Yates-Grundy:  `\(\hat{t}_{HT} = 992,665,088\)` with a SE of `\(SE_{YG}(\hat{t}_{HT}) = 11,015,154\)`
+
+
+```r
+&gt; ag_pps&lt;- svydesign(id = ~1, 
++                    fpc = ~pii,  
++                    pps = ppsmat(incl_mat), 
++                    variance = "YG",
++                    data = agpps) 
+&gt; svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+            total        SE  DEff
+acres92 992665088  11015154 1e-04
+```
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+Changing how the SE is estimated to the With Replacement version:  `\(\hat{t}_{HT} = 992,665,088\)` with a SE of `\(SE_{WR}(\hat{t}_{HT}) = 11,508,289\)`
+
+
+```r
+&gt; ag_pps&lt;- svydesign(id = ~1, 
++                    fpc = ~pii,  
++                    data = agpps) 
+&gt; svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+            total        SE   DEff
+acres92 992665088  11508289 0.0023
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

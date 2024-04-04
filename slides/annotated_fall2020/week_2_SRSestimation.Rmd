@@ -1,0 +1,230 @@
+---
+title: "SRS: estimation details"
+author: "Stat 260, St. Clair"
+subtitle: "Week 2 (2.1, 2.3-2.6)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE)
+```
+
+
+## Design: Simple Random Sample (SRS)
+
+
+**Defined**: Each sample of size $n$ units is equally likely
+
+- Assumption: sampling unit = observation unit
+
+- Assumption: done *without replacement*
+
+- **implies** that each *sampling unit* is equally likely (reverse is *not* true)
+
+---
+
+## Inclusion probabilities: SRS
+
+What is the probability that unit $i$ is selected in a SRS of size $n$ from a population of $N$ units?
+
+Math fact: $\binom{N}{n} = \dfrac{N!}{n!(N-n)!}$ counts the number of samples of size $n$  
+
+---
+
+## Sampling weights: SRS
+
+What is the sampling weight for  unit $i$ under a SRS?
+
+---
+
+## Estimation plan: SRS
+
+- Use a Horvitz-Thompson estimator to estimate the **population total**
+$$\hat{t}_{HT} = \sum_{\textrm{sampled units}} w_i y_i = \sum_{\textrm{sampled units}} \dfrac{y_i}{\pi_i}$$
+
+<br>
+<br>
+
+<br>
+
+<br>
+
+<br>
+
+
+
+
+- Divide by population size to estimate a **population mean**
+
+- Define a **binary** indicator (1=yes, 0=no) as the response and use **mean** results to estimate a **population proportion**
+
+---
+
+## Population Total: SRS
+
+- Parameter: $t = \sum_{i=1}^N y_i$
+
+<br>
+
+- Estimator (unbiased)
+$$
+\hat{t} = N \bar{y}
+$$
+where $\bar{y}$ is the sample mean response.
+
+- Standard error (estimated variation in $\hat{t}$)
+$$
+SE(\hat{t}) = N \times SE(\bar{y}) = N\sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{s^2}{n}}
+$$
+where $s$ is the sample standard deviation.
+
+---
+
+## Population Mean: SRS
+
+- Parameter: $\bar{y}_{\mathcal{U}} = \dfrac{t}{N}$
+
+<br>
+
+- Estimator (unbiased)
+$$
+\hat{\bar{y}}_{\mathcal{U}} = \dfrac{\hat{t}}{N}= \bar{y}
+$$
+
+- Standard error (estimated variation in $\bar{y}$)
+$$
+SE(\hat{\bar{y}}_{\mathcal{U}} ) = \dfrac{SE(\hat{t})}{N} = \sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{s^2}{n}}
+$$
+
+
+
+---
+
+## Population Proportion of "successes": SRS
+
+-  $y_i = 1$ if unit $i$'s response is a "success" and 0 otherwise
+
+- Parameter: $p = \dfrac{t}{N} = \dfrac{\textrm{number of successes in pop.}}{\textrm{pop. size}}$
+
+<br>
+
+- Estimator (unbiased)
+$$
+\hat{p} =  \bar{y} = \textrm{sample proportion of successes}
+$$
+
+- Standard error (estimated variation in $\hat{p}$)
+$$
+SE(\hat{p})  = \sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{\hat{p}(1-\hat{p})}{n-1}} 
+$$
+
+---
+
+## SE comments
+
+- $\left( 1 - \dfrac{n}{N} \right)$ is the **finite population correction** (fpc) that we get from sampling **without replacement**
+
+  - omit the FPC if $N$ unknown 
+
+
+<br>
+<br>
+<br>
+
+
+- Why all the SE details?
+
+  - Need to understand SE's to compare competing designs!
+
+---
+
+## Coefficient of Variation
+
+**Definition** The estimated coefficient of variation for an unbiased estimator is
+$$
+CV = \dfrac{\textrm{SE of estimate}}{\textrm{estimate}}
+$$
+
+- allows you to compare estimator precision across measurements of different magnitude
+
+  - e.g. compare the precision of estimates of mean monthly housing expenditures between residents of NYC and Kansas City
+
+---
+
+## Confidence intervals: SRS
+
+- When $n$, $N$ and $N-n$ are "large", our SRS estimators have a roughly **normally distributed sampling distribution** 
+
+  - A Central Limit Theorem for "finite" populations
+
+<br>
+
+ 
+- A "C"% confidence interval for our parameters looks like:
+$$
+\textrm{estimate} \pm q \times SE
+$$
+- $q$ is a quantile that is determined by the confidence level $C = 1-\alpha$ and is either
+
+  -  from the $t$ distribution with $n-1$ degrees of freedom
+  - from $N(0,1)$ when $n$ is really big (or not yet determined)
+
+---
+
+## Confidence interval for a difference: SRS
+
+A CI for the difference of two population parameters $\theta_1 - \theta_2$ looks like
+$$
+\hat{\theta}_1 - \hat{\theta}_2 \pm q \times \sqrt{SE^2_1 + SE^2_2}
+$$
+- Condition: We have two **separate** SRS so $\hat{\theta}_1$ and $\hat{\theta}_2$ are computed from **separate** units.
+
+---
+
+## Planning a survey: SRS
+
+What should $n$ be to achieve 
+  - to estimate the population **mean**
+  - a fixed margin of error $e$ 
+  - with confidence level "C"?
+
+.pull-left[
+$N$ **known**: $n = \dfrac{n_0}{1+n_0/N}$
+
+]
+
+.pull-right[
+$N$ **unknown**: $n = n_0$
+]
+
+where 
+
+- $n_0 = \left(\dfrac{sz}{e}\right)^2$
+
+- $s$ is our "best guess" at the SD of our quantitative response
+  - for proportion: $s \approx \sqrt{p(1-p)}$
+
+- $z$ is a $N(0,1)$ quantile for "C" level of confidence
+
+---
+
+## Planning a survey: SRS
+
+What should $n$ be to trust the "large enough" sample size condition for CI?
+
+- Sugden et al. suggests
+$$n_{min} \approx 28 + 25 \left( \dfrac{\sum_{i=1}^n (y_i - \bar{y})^3}{ns^3} \right)^2$$
+
+---
+
+## For fun: 
+why $n-1$ in the $SE(\hat{p})$?
+
+---

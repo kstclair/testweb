@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>SRS: estimation details</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# SRS: estimation details
+## Week 2 (2.1, 2.3-2.6)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+## Design: Simple Random Sample (SRS)
+
+
+**Defined**: Each sample of size `\(n\)` units is equally likely
+
+- Assumption: sampling unit = observation unit
+
+- Assumption: done *without replacement*
+
+- **implies** that each *sampling unit* is equally likely (reverse is *not* true)
+
+---
+
+## Inclusion probabilities: SRS
+
+What is the probability that unit `\(i\)` is selected in a SRS of size `\(n\)` from a population of `\(N\)` units?
+
+Math fact: `\(\binom{N}{n} = \dfrac{N!}{n!(N-n)!}\)` counts the number of samples of size `\(n\)`  
+
+---
+
+## Sampling weights: SRS
+
+What is the sampling weight for  unit `\(i\)` under a SRS?
+
+---
+
+## Estimation plan: SRS
+
+- Use a Horvitz-Thompson estimator to estimate the **population total**
+`$$\hat{t}_{HT} = \sum_{\textrm{sampled units}} w_i y_i = \sum_{\textrm{sampled units}} \dfrac{y_i}{\pi_i}$$`
+
+&lt;br&gt;
+&lt;br&gt;
+
+&lt;br&gt;
+
+&lt;br&gt;
+
+&lt;br&gt;
+
+
+
+
+- Divide by population size to estimate a **population mean**
+
+- Define a **binary** indicator (1=yes, 0=no) as the response and use **mean** results to estimate a **population proportion**
+
+---
+
+## Population Total: SRS
+
+- Parameter: `\(t = \sum_{i=1}^N y_i\)`
+
+&lt;br&gt;
+
+- Estimator (unbiased)
+$$
+\hat{t} = N \bar{y}
+$$
+where `\(\bar{y}\)` is the sample mean response.
+
+- Standard error (estimated variation in `\(\hat{t}\)`)
+$$
+SE(\hat{t}) = N \times SE(\bar{y}) = N\sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{s^2}{n}}
+$$
+where `\(s\)` is the sample standard deviation.
+
+---
+
+## Population Mean: SRS
+
+- Parameter: `\(\bar{y}_{\mathcal{U}} = \dfrac{t}{N}\)`
+
+&lt;br&gt;
+
+- Estimator (unbiased)
+$$
+\hat{\bar{y}}_{\mathcal{U}} = \dfrac{\hat{t}}{N}= \bar{y}
+$$
+
+- Standard error (estimated variation in `\(\bar{y}\)`)
+$$
+SE(\hat{\bar{y}}_{\mathcal{U}} ) = \dfrac{SE(\hat{t})}{N} = \sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{s^2}{n}}
+$$
+
+
+
+---
+
+## Population Proportion of "successes": SRS
+
+-  `\(y_i = 1\)` if unit `\(i\)`'s response is a "success" and 0 otherwise
+
+- Parameter: `\(p = \dfrac{t}{N} = \dfrac{\textrm{number of successes in pop.}}{\textrm{pop. size}}\)`
+
+&lt;br&gt;
+
+- Estimator (unbiased)
+$$
+\hat{p} =  \bar{y} = \textrm{sample proportion of successes}
+$$
+
+- Standard error (estimated variation in `\(\hat{p}\)`)
+$$
+SE(\hat{p})  = \sqrt{\left(1-\dfrac{n}{N} \right) \dfrac{\hat{p}(1-\hat{p})}{n-1}} 
+$$
+
+---
+
+## SE comments
+
+- `\(\left( 1 - \dfrac{n}{N} \right)\)` is the **finite population correction** (fpc) that we get from sampling **without replacement**
+
+  - omit the FPC if `\(N\)` unknown 
+
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+
+- Why all the SE details?
+
+  - Need to understand SE's to compare competing designs!
+
+---
+
+## Coefficient of Variation
+
+**Definition** The estimated coefficient of variation for an unbiased estimator is
+$$
+CV = \dfrac{\textrm{SE of estimate}}{\textrm{estimate}}
+$$
+
+- allows you to compare estimator precision across measurements of different magnitude
+
+  - e.g. compare the precision of estimates of mean monthly housing expenditures between residents of NYC and Kansas City
+
+---
+
+## Confidence intervals: SRS
+
+- When `\(n\)`, `\(N\)` and `\(N-n\)` are "large", our SRS estimators have a roughly **normally distributed sampling distribution** 
+
+  - A Central Limit Theorem for "finite" populations
+
+&lt;br&gt;
+
+ 
+- A "C"% confidence interval for our parameters looks like:
+$$
+\textrm{estimate} \pm q \times SE
+$$
+- `\(q\)` is a quantile that is determined by the confidence level `\(C = 1-\alpha\)` and is either
+
+  -  from the `\(t\)` distribution with `\(n-1\)` degrees of freedom
+  - from `\(N(0,1)\)` when `\(n\)` is really big (or not yet determined)
+
+---
+
+## Confidence interval for a difference: SRS
+
+A CI for the difference of two population parameters `\(\theta_1 - \theta_2\)` looks like
+$$
+\hat{\theta}_1 - \hat{\theta}_2 \pm q \times \sqrt{SE^2_1 + SE^2_2}
+$$
+- Condition: We have two **separate** SRS so `\(\hat{\theta}_1\)` and `\(\hat{\theta}_2\)` are computed from **separate** units.
+
+---
+
+## Planning a survey: SRS
+
+What should `\(n\)` be to achieve 
+  - to estimate the population **mean**
+  - a fixed margin of error `\(e\)` 
+  - with confidence level "C"?
+
+.pull-left[
+`\(N\)` **known**: `\(n = \dfrac{n_0}{1+n_0/N}\)`
+
+]
+
+.pull-right[
+`\(N\)` **unknown**: `\(n = n_0\)`
+]
+
+where 
+
+- `\(n_0 = \left(\dfrac{sz}{e}\right)^2\)`
+
+- `\(s\)` is our "best guess" at the SD of our quantitative response
+  - for proportion: `\(s \approx \sqrt{p(1-p)}\)`
+
+- `\(z\)` is a `\(N(0,1)\)` quantile for "C" level of confidence
+
+---
+
+## Planning a survey: SRS
+
+What should `\(n\)` be to trust the "large enough" sample size condition for CI?
+
+- Sugden et al. suggests
+`$$n_{min} \approx 28 + 25 \left( \dfrac{\sum_{i=1}^n (y_i - \bar{y})^3}{ns^3} \right)^2$$`
+
+---
+
+## For fun: 
+why `\(n-1\)` in the `\(SE(\hat{p})\)`?
+
+---
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

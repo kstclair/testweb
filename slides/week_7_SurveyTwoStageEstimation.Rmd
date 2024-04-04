@@ -1,0 +1,295 @@
+---
+title: "`Survey` package: Two stage cluster sampling"
+author: "Stat 260, St. Clair"
+subtitle: "Week 7"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.height = 7, fig.width = 11)
+library(dplyr)
+library(survey)
+library(SDaA)
+```
+
+
+
+
+### Two-stage cluster sampling estimation 
+
+The data format for two-stage cluster sampling data must be at the **SSU-level** ("raw" data)
+
+  - unlike one-stage data, the `survey` package cannot get correct estimates/SE from "cluster-level" data summaries
+
+---
+
+### Two-stage cluster sampling estimation 
+
+```{r, eval = FALSE}
+twostage_design <- svydesign(id = ~PSU + SSU, 
+                          fpc = ~N + Mi,    
+                          weights = ~wts,   
+                          data = mydata)
+svymean(~y, twostage_design)   # ratio mean estimate
+svytotal(~y, twostage_design)  # unbiased total estimate
+```
+
+- `svytotal` will give you unbiased total estimates $\hat{t}_{unb}$
+
+  - for **mean**: divide by $M_0$, if known, to get $\hat{\bar{y}}_{unb} = \hat{t}_{unb}/M_0$, SE and CI
+
+- `svymean` will give you ratio (biased) mean estimates $\hat{\bar{y}}_{r}$
+
+  - for **total**: multiply by $M_0$, if known, to get $\hat{t}_{r} = M_0\hat{\bar{y}}_{r}$, SE and CI
+
+---
+
+### California API scores
+
+
+- A SRS of 40 school districts was selected from the 757 districts in the state. 
+
+- Data from a SRS of schools within each selected district was collected.    
+
+```{r}
+schools <- read.csv("http://math.carleton.edu/kstclair/data/california_cluster.csv")
+glimpse(schools)
+```
+
+---
+
+### California API scores:  `id` entries
+
+- PSU: district
+
+  - `dname` or `dnum`
+ 
+- SSU: school
+
+  - `sname` or `snum`
+
+---
+
+### California API scores:  SSU
+
+
+$M_i$ = number of schools in district $i$
+  
+  - `district_size`
+
+```{r}
+schools_by_district <- schools %>% 
+  group_by(dnum) %>%  # group by cluster (district number)
+  summarize(M_i = first(district_size), 
+            m_i = n() )  # sample size per cluster
+summary(schools_by_district$M_i)
+```
+
+
+---
+
+### California API scores:  SSU
+
+
+$m_i$ = number of *sampled* schools in district $i$
+  
+  - not given in the data set
+
+```{r}
+summary(schools_by_district$m_i)
+```
+
+
+Add $m_i$ to the original data set with `mutate`:
+```{r}
+schools <- schools %>%
+    group_by(dnum) %>% # group by cluster (district number)
+    mutate(m_i = n())  #  m_i = sample size per cluster
+schools %>% select(dnum, m_i) %>% glimpse()
+```
+
+
+---
+
+### California API scores: weights
+
+- Two-stage weights are $\dfrac{NM_i}{nm_i}$
+
+```{r}
+schools$N <- 757  # N
+schools$n <- 40   # n 
+schools$wts <- (757/40)*schools$district_size/schools$m_i
+summary(schools$wts)
+```
+
+---
+
+### California API scores: design
+
+
+```{r}
+schools_design <- svydesign(id= ~dnum + snum, 
+                            fpc= ~N + district_size, 
+                            weights = ~wts, 
+                            data=schools)
+```
+
+---
+
+### California API scores
+
+
+```{r}
+svymean(~growth, schools_design, deff = TRUE) # ratio est.
+svytotal(~growth, schools_design, deff = TRUE) # unbiased est.
+```
+
+---
+
+### Lohr Examples 5.7
+
+```{r}
+coots <- read.csv("http://math.carleton.edu/kstclair/data/coots.csv")
+library(dplyr)
+glimpse(coots)
+```
+
+- `clutch`: clutch (nest) identifier (cluster)
+
+- `csize`: clutch size (cluster size) $M_i$
+
+- `volume`: egg volume
+
+---
+
+### Lohr Examples 5.7: `id` entries
+
+- PSU: clutch
+
+  - `clutch` identifies clusters
+
+- SSU: egg
+
+  - Nothing to identify eggs 
+  
+  - Add in a row number variable to do so (using `~1` doesn't work!)
+
+```{r}
+coots$elem.id <- 1:nrow(coots)   # unique id for each egg
+```
+
+---
+
+### Lohr Examples 5.7: SSU info
+
+$M_i$ = number of eggs in clutch $i$  
+  
+  - `csize`
+  
+```{r}
+clutch_summary <- coots %>%
+  group_by(clutch) %>% 
+  summarize(Mi = first(csize),   # size of each clutch
+            mi = n() )            # sample size of each clutch
+summary(clutch_summary$Mi)
+```
+
+---
+
+### Lohr Examples 5.7: SSU info
+
+$m_i$ = number of *sampled* eggs in clutch $i$  
+  
+  - not given in the data set
+  
+```{r}
+summary(clutch_summary$mi)
+```
+
+Add $m_i$ to the original data set with `mutate`:
+```{r}
+coots <- coots %>% 
+  group_by(clutch) %>% 
+  mutate(mi = n()) 
+coots
+```
+
+
+
+
+---
+
+### Lohr Examples 5.7: PSU info
+
+$N$ = number of clutches in the population 
+  
+  - unknown!
+  
+- But this is fine for estimating a **mean/proportion** 
+  
+  - cluster sampling weights $N/n$: self-weighting design
+  
+  - like not knowing $N$ for a SRS 
+
+---
+
+### Lohr Examples 5.7: weights with $N$ unknown
+
+- **Sampling weights** are proportional to $\dfrac{M_i}{m_i}$:
+```{r}
+coots$wts <- coots$csize/coots$mi  
+summary(coots$wts)
+```
+
+  
+
+---
+
+### Lohr Examples 5.7: design
+
+
+
+```{r}
+coots_design <- svydesign(id = ~clutch + elem.id, 
+                        weights = ~wts, 
+                        data = coots)
+summary(coots_design)
+```
+
+---
+
+### Lohr Examples 5.7
+
+- The SE won't include the FPCs
+
+```{r}
+mn.obj <- svymean(~volume, coots_design, deff=T)
+mn.obj  #ratio estimate of pop. mean without FPC in SE
+confint(mn.obj, df=degf(coots_design))
+```
+
+
+---
+
+### Lohr Examples 5.7
+
+
+- The sampling weights are just $\dfrac{M_i}{m_i}$ instead of $\dfrac{NM_i}{nm_i}$
+
+  - We need exact sampling weights to estimate any **total**
+
+```{r}
+svytotal(~volume, coots_design, deff=T)  # INCORRECT 
+sum(coots$volume*coots$wts)
+```
+
+- 4375.95 is the estimated **total volume** of the **sampled clutches**
+
+  - NOT the **total volume** of **all** clutches in the **population**.

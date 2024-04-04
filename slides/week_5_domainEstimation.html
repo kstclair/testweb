@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Estimation in Domains</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Estimation in Domains
+## Week 5 (4.3)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+
+
+### Domains
+
+**Domain:** subpopulations of interest  `\(\mathcal{U}_d\)`
+
+  - We want to estimate a domain parameter: `\(t_{d}, \bar{y}_{\mathcal{U}_d}, p_d\)`
+  
+---
+
+### Design
+
+We take a SRS of size `\(n\)` from a population `\(\mathcal{U}\)`
+
+- **Problem:** `\(n_d\)`, the number of respondents in the domain, varies from sample to sample
+
+---
+
+### Domain estimation: a ratio estimator
+
+- Domain indicator:
+
+`$$x_i = \left\{ \begin{array}{ll}
+1 &amp; \textrm{if unit } i \textrm{ is in the domain} \\
+0 &amp; \textrm{if unit } i \textrm{ is not in the domain}  \end{array} \right.$$`
+
+--
+
+- Domain sample size:
+
+`$$n_d = \sum_{i = 1}^n x_i$$`
+
+---
+
+### Domain estimation: a ratio estimator
+
+- Domain responses:
+
+`$$u_i = x_i y_i = \left\{ \begin{array}{ll}
+y_i &amp; \textrm{if unit } i \textrm{ is in the domain} \\
+0 &amp; \textrm{if unit } i \textrm{ is not in the domain}  \end{array} \right.$$`
+
+--
+
+- Domain sample mean:
+
+`$$\bar{y}_d = \dfrac{\sum_{i \in \textrm{domain}} y_i}{n_d} = \dfrac{\sum_{i=1}^n u_i}{\sum_{i = 1}^n x_i}$$`
+
+
+---
+
+### Domain estimation for a mean 
+
+- **Domain Parameter** mean `\(\bar{y}_{\mathcal{U}_d}\)` 
+
+--
+
+- **Estimator** with a SRS of units: a ratio estimator
+`$$\bar{y}_d = \dfrac{\sum_{i=1}^n u_i}{\sum_{i = 1}^n x_i}$$`
+
+--
+
+- **SE**: when `\(n\)` is "large" (or bias about 0)
+$$
+SE(\bar{y}_d) \approx \sqrt{\left( 1- \frac{n}{N}\right) \frac{s^2_e}{n\bar{x}^2}} = \sqrt{\left( 1- \frac{n}{N}\right) \left( \frac{n}{n-1}\right)\left( \frac{n_d - 1}{n_d}\right)\frac{s^2_d}{n_d}}
+$$
+where `\(s_d\)` is the sample SD of the measurements `\(y_i\)` in the sampled domain.
+
+
+---
+
+### Domain estimation for a  proportion
+
+- **Domain Parameter**  proportion `\(p_d\)`
+
+- Response `\(y_i\)` is an indicator of "success"
+
+--
+
+- **Estimator** with a SRS of units: a ratio estimator
+`$$\hat{p}_d = \dfrac{\sum_{i=1}^n u_i}{\sum_{i = 1}^n x_i} = \dfrac{\sum_{i=1}^n x_iy_i}{\sum_{i = 1}^n x_i}$$`
+
+--
+
+
+- **SE**: same as the mean except `\(s^2_d = \dfrac{n_d}{n_d-1} \hat{p}_d (1-\hat{p}_d)\)` 
+
+
+---
+
+### Example 1
+An economist wants to estimate the average weekly amount spent on
+food by households containing children in a small town. 
+
+A complete list of all 2500 households in the county is available, but
+identifying those households with children is impossible.
+
+
+--
+
+
+So the economist selects a SRS of 500 households and observes 420 that
+contain children. 
+
+
+--
+
+Of the 420 households with children, he records an average of $120.35 spent on food during a week and a sample SD of
+$42.20.
+
+
+---
+
+### Example 1(a): 
+
+Estimate the average weekly amount of money spent on food by all households with children in the county and compute the standard error of your estimate.
+
+---
+
+### Domain estimation for a total 
+
+- **Domain Parameter** total `\(t_d\)` 
+
+Two scenarios:
+
+**1.** If `\(N_d\)`, population size of the domain, is **known**
+
+--
+
+`$$\hat{t}_d = N_d \bar{y}_d, \ \ \ SE(\hat{t}_d) = N_dSE(\bar{y}_d)$$`
+
+---
+
+### Domain estimation for a total 
+
+- **Domain Parameter** total `\(t_d\)` 
+
+Two scenarios:
+
+**2.** If `\(N_d\)`, population size of the domain, is **unknown**
+
+--
+
+- **Estimator**: SRS total estimate with `\(u_i\)` as the response
+`$$\hat{t}_d = N \bar{u}$$`
+
+--
+
+- **SE**: 
+`$$SE(\hat{t}_d ) =  NSE(\bar{u}) = N\sqrt{\left( 1- \frac{n}{N}\right) \frac{s^2_u}{n}}$$`
+where `\(s_u\)` is the sample SD of the measurements `\(u_i\)` in the sample and
+`$$s^2_u = \dfrac{1}{n-1}\left[(n_d - 1)s^2_d + n_d \bar{y}_d^2\left(1-\frac{n_d}{n}\right) \right]$$`
+
+---
+
+### Example 1(b): 
+
+Estimate the total weekly amount of money spent on
+food by households with children and compute the standard error of
+your estimate.
+
+---
+
+### Bias of domain mean estimator
+
+Small when `\(n\)` is large or `\(n_d/n\)` is close to 1
+
+---
+
+### Proof
+
+$$
+SE(\bar{y}_d) \approx \sqrt{\left( 1- \frac{n}{N}\right) \frac{s^2_e}{n\bar{x}^2}} = \sqrt{\left( 1- \frac{n}{N}\right) \left( \frac{n}{n-1}\right)\left( \frac{n_d - 1}{n_d}\right)\frac{s^2_d}{n_d}}
+$$
+
+
+---
+
+### Proof
+
+`$$s^2_u = \dfrac{1}{n-1} \sum_{i=1}^n (u_i - \bar{u})^2=  \dfrac{1}{n-1}\left[(n_d - 1)s^2_d + n_d \bar{y}_d^2\left(1-\frac{n_d}{n}\right) \right]$$`
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,227 @@
+---
+title: "Two-stage cluster sampling estimation: variance"
+author: "Stat 260, St. Clair"
+subtitle: "Week 7 (5.3)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL,tidy.opts=list(width.cutoff=60),tidy=FALSE,eval=TRUE,eval=TRUE, warning=FALSE, message  = FALSE, fig.width = 11, fig.height = 5)
+library(dplyr)
+library(ggplot2)
+library(survey)
+schools <- read.csv("http://math.carleton.edu/kstclair/data/california_cluster.csv")
+schools$N <- 757  # N
+schools$n <- 40   # n 
+schools <- schools %>%
+    group_by(dnum) %>% # group by cluster (district number)
+    mutate(m_i = n())  #  m_i = sample size per cluster
+summary(schools$m_i)
+schools$wts <- (757/40)*schools$district_size/schools$m_i
+schools_design <- svydesign(id= ~dnum + snum, 
+                            fpc= ~N + district_size, 
+                            weights = ~wts, 
+                            data=schools)
+```
+
+
+
+
+## Population Total: Two-Stage Cluster 
+
+- **Parameter**: $t = \sum_{i=1}^N \sum_{j=1}^{M_i} y_{ij}=  \sum_{i=1}^N t_i$
+
+- **Unbiased Estimator:** 
+$$\hat{t}_{unb} =  \sum_{i =1}^{n}  \dfrac{N}{n} M_{i} \bar{y}_{i} = \sum_{i =1}^{n} \dfrac{N}{n} \hat{t}_{i}$$
+where $\bar{t}$ is the sample mean **total response** per cluster.
+
+- **Standard error:**
+$$SE(\hat{t}_{unb}) =  \sqrt{N^{2}\left(1- \dfrac{n}{N} \right) \dfrac{s^{2}_{t}}{n} + \dfrac{N}{n} \sum_{i=1}^n  \left(1- \dfrac{m_{i}}{M_{i}} \right) M_{i}^{2}\dfrac{s^{2}_{i}}{m_{i}} }$$
+
+---
+
+## Variance: between + within cluster variation
+
+**1. Between cluster variation:** $N^{2}\left(1- \dfrac{n}{N} \right) \dfrac{s^{2}_{t}}{n}$
+
+  - just the **one-stage** variance 
+
+<br>
+<br>
+<br>
+
+**2. Within cluster variation:**  $\dfrac{N}{n} \sum_{i=1}^n  \left(1- \dfrac{m_{i}}{M_{i}} \right) M_{i}^{2}\dfrac{s^{2}_{i}}{m_{i}}$
+
+  - added because we don't sample *all* units within a cluster
+
+<br>
+<br>
+
+- Same explanation of the *ratio* estimator $SE(\hat{\bar{y}}_r)$
+
+---
+
+## Comparing cluster sampling and SRS
+
+- **One-stage** *less* precise than a SRS when clusters are *homogeneous*
+
+  - Same holds true for **two-stage**
+  
+  - Generally, $SE_{two-stage} \geq  SE_{one-stage} > SE_{SRS}$
+
+---
+
+## Two-stage cluster sampling: Assessing homogeneity
+
+- Visually: plot cluster id vs $y_{ij}$ (boxplot, scatterplot)
+
+- Adjusted R-squared: 
+$$
+\hat{R}^{2}_{a} = 1-\dfrac{\widehat{MSW}}{\hat{S}^{2}}
+$$
+- $MSW$ is estimated from **sample ANOVA** values  $msw$
+
+- **Cluster/sample sizes equal:**  $S^2$ is estimated from **sample ANOVA** values $msb$ and $msw$:
+$$
+\hat{S}^2 = \dfrac{\dfrac{M}{m}(N-1)msb + \left(\dfrac{m-1}{m}NM + \dfrac{M}{m}-1\right)msw}{NM-1} 
+$$
+
+- **Cluster/sample sizes NOT equal:** best "by hand" (but biased) approximation is the sample variance of all responses $s^2$
+
+
+---
+
+## Example: California API scores by district
+
+```{r}
+schools_by_district <- schools %>% 
+  group_by(dnum) %>%  # group by cluster (district number)
+  summarize( s_i = sd(api00),    # SD by cluster
+            m_i = n(), # sample size per cluster
+            M_i = first(district_size) ,
+            samp_frac = m_i/M_i)
+summary(schools_by_district)
+```
+
+
+---
+
+## Example: California API scores by district
+
+```{r, echo=TRUE}
+ggplot(schools, aes(x=dname, y = api00)) + 
+  geom_point() + 
+  geom_vline(aes(xintercept=dname), linetype= "dotted") + 
+  coord_flip() + 
+  labs(x="District (cluster)")
+```
+
+
+
+---
+
+## Example: California API scores by district
+
+- Cluster (district) sizes in the population are *not* similar. 
+
+  - quick approximation gives $R^2_a  \approx 0.86$
+
+```{r}
+api_lm <- lm(api00 ~ dname, data=schools)
+anova(api_lm)
+1 - 2567/var(schools$api00)   # r^2_a =  1=msw/s^2
+summary(api_lm)$adj.r.squared  # r^2_a 
+```
+
+
+---
+
+## Example: California growth by district
+
+```{r, echo=TRUE}
+ggplot(schools, aes(x=dname, y = growth)) + 
+  geom_point() + 
+  geom_vline(aes(xintercept=dname), linetype= "dotted") + 
+  coord_flip() + 
+  labs(x="District (cluster)")
+```
+
+
+---
+
+## Example: California growth by district
+
+- quick approximation gives $R^2_a  \approx 0.24$
+
+
+```{r}
+growth_lm <- lm(growth ~ dname, data=schools)
+summary(growth_lm)$adj.r.squared
+```
+
+
+---
+
+## Example: California growth by district
+
+- `growth` is more heterogeneous by district so its SE is more similar to a SRS than `api00`
+
+```{r}
+# design from estimation slides
+svymean(~api00 + growth, schools_design, deff = TRUE)
+```
+
+---
+
+## Variance: between + within cluster variation
+
+$$Var(\hat{t}_{unb}) =  N^{2}\left(1- \dfrac{n}{N} \right) \dfrac{S^{2}_{t}}{n} + \dfrac{N}{n} \sum_{i=1}^N  \left(1- \dfrac{m_{i}}{M_{i}} \right) M_{i}^{2}\dfrac{S^{2}_{i}}{m_{i}}$$
+<br>
+
+**Sketch of Proof**
+Uses Appendix Section A.4 Rule 5:
+$$
+Var(Y) = Var_y(E_x(Y \mid X)) + E_y(Var_x(Y \mid X))
+$$
+
+
+
+---
+
+## A. between  cluster variation
+
+Fixed clusters (stage 1): $i \in \mathcal{S}$ are fixed
+$$E_2(\hat{t} \mid \textrm{stage 1 fixed})$$
+
+
+
+---
+
+## A. between  cluster variation
+
+How does $E_2$ vary across stage 1 samples?
+$$Var_1(E_2(\hat{t} \mid \textrm{stage 1 fixed}))$$
+
+
+
+---
+
+## B. within  cluster variation
+
+Fixed clusters (stage 1): $i \in \mathcal{S}$ are fixed
+$$Var_2(\hat{t} \mid \textrm{stage 1 fixed})$$
+
+
+
+---
+
+## B. within  cluster variation
+
+What is the expected $V_2$ across stage 1 samples?
+$$E_1(Var_2(\hat{t} \mid \textrm{stage 1 fixed}))$$

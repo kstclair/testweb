@@ -1,0 +1,105 @@
+---
+title: "`Survey` package: Domain and poststratification estimation"
+author: "Stat 260, St. Clair"
+subtitle: "Week 5"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.height = 7, fig.width = 11)
+library(dplyr)
+library(knitr)
+library(survey)
+library(SDaA)
+```
+
+
+### Domain estimation 
+
+- You have a `design_srs` object 
+```{r, eval = FALSE}
+svyby(~y, ~domainvar, ~design_srs, svymean)  # domain means/props
+svyby(~y, ~domainvar, ~design_srs, svytotal)  # domain totals
+```
+
+---
+
+### Lohr Examples 4.7
+
+Estimate regional means using the `agsrs` SRS data
+```{r}
+agsrs <- read.csv("http://math.carleton.edu/kstclair/data/agsrs.csv")
+agsrs$n <- nrow(agsrs)
+agsrs$N <- 3078
+agsrs$wts <- agsrs$N/agsrs$n
+design_srs <- svydesign(id= ~1, 
+                        fpc= ~N, 
+                        weights= ~wts, 
+                        data= agsrs)
+```
+
+---
+
+### Lohr Examples 4.7
+
+Estimate regional means using the `agsrs` SRS data
+```{r}
+region_tot <-svyby(~acres92, ~region, design_srs, svytotal)
+region_tot   # domain estimates of total
+confint(region_tot, df=degf(design_srs))
+```
+
+---
+
+
+### Poststratification estimation 
+
+- You have a `design` object which is turned into a poststratified design object 
+```
+pop_Nh <- data.frame(strat = c(..fill in..),
+                  Nh = c(..fill..in))
+design_post <- postStratify(design, ~poststrat, pop_Nh)   
+```
+
+---
+
+### Poststratification estimation 
+
+Poststratify the `agsrs` SRS data.
+
+```{r}
+levels(agsrs$region)  # names of poststrata levels
+# need data frame: poststrata variable, poststrata pop. sizes
+pop_Nh <- data.frame(region=c("NC","NE","S","W"),
+                    Nh=c(1054, 220, 1382, 422))
+pop_Nh
+```
+
+---
+
+### Poststratification estimation 
+
+Poststratify the `agsrs` SRS data.
+
+```{r}
+design_post<- postStratify(design_srs, strata= ~region, population= pop_Nh)
+summary(design_post)
+```
+
+---
+
+### Poststratification estimation 
+
+Poststratified estimate of mean 1992 farming acres per county
+
+
+```{r}
+svymean(~acres92, design_post)  # poststratified estimate
+```

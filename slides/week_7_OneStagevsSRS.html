@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Comparing One-stage cluster sampling to SRS</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Comparing One-stage cluster sampling to SRS
+## Week 7 (5.2.2)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+
+## When is a one-stage cluster sample more precise than SRS?
+
+When does
+`$$SE(\hat{t}_{cluster}) \overset{???}{&lt;} SE(\hat{t}_{SRS})$$`
+&lt;br&gt;
+&lt;br&gt;
+
+--
+
+**answer:** It depends on the measurement's  **Analysis of Variance** (ANOVA)
+
+---
+
+##  Lohr Examples 5.6: design effect
+
+
+```r
+&gt; svymean(~score, alg_design, deff = TRUE)  
+         mean      SE  DEff
+score 62.5686  1.4916 2.245
+&gt; boxplot(score ~ class, data = algebra)
+```
+
+![](week_7_OneStagevsSRS_files/figure-html/unnamed-chunk-1-1.png)&lt;!-- --&gt;
+
+
+
+
+---
+
+## Population ANOVA
+
+Let `\(y_{ij}\)` be your measurement of unit `\(j\)` in cluster `\(i\)`
+
+ANOVA breaks the **total** sum of squares of `\(y\)` into **between cluster** and **within cluster** variation:
+$$
+SST = SSB + SSW
+$$
+
+&lt;br&gt;
+&lt;br&gt;
+
+--
+
+For now, **assume that cluster sizes are equal**
+$$
+M_i = M \textrm{ for all clusters }i = 1, \dotsc, N
+$$
+
+---
+
+## Population ANOVA
+
+
+Source  |  df  |  Sum of Squares  |  Mean Square
+------- | -------- | ---------------  | ------------
+**Between**   |  `\(N-1\)`  |  `\(SSB= \sum_{i=1}^{N} M(\bar{y}_{i \mathcal{U}} - \bar{y}_{\mathcal{U}})^{2}\)`  |  `\(MSB=\dfrac{SSB}{N-1}\)` 
+**Within**   |  `\(N(M-1)\)`  |  `\(SSW= \sum_{i=1}^{N} (M-1) S^2_i\)`  | `\(MSW=\dfrac{SSW}{N(M-1)}\)`
+**total**  |  `\(NM-1\)`  |  `\(SSTot= \sum_{i=1}^{N} \sum_{j=1}^{M} (y_{ij} - \bar{y}_{\mathcal{U}})^{2}\)`  |  `\(S^{2}= \dfrac{SSTot}{NM-1}\)`
+
+---
+
+## Variance: SRS
+
+**Equal cluster sizes:** We've sampled `\(nM\)` **observation units** (SSU) out of `\(M_0 = NM\)` possible units. 
+
+--
+
+For a SRS of `\(nM\)` **observation units**, we can write the variance, `\(SE^2\)`,  of `\(\hat{t}_{SRS}\)` as
+`$$Var(\hat{t}_{SRS}) = (NM)^2\left( 1 - \dfrac{nM}{NM}\right) \dfrac{S^2}{nM}$$`
+where `\(S\)` is the SD of the measurements in the population. 
+
+
+---
+
+## Variance: One-stage cluster sample
+
+**Equal cluster sizes:** Under this assumption the variance of `\(\hat{t}_{unb}\)` is equal to 
+$$
+Var(\hat{t}_{unb}) = N^2\left( 1 - \dfrac{n}{N}\right) \dfrac{M \times MSB}{n}
+$$
+
+
+---
+
+## Variance: SRS vs. Stratified sample
+
+**Equal cluster sizes:** Under this assumption, the design effect for a one-stage cluster sample total estimate is
+`$$DEff(\hat{\bar{y}}_{unb}) = DEff(\hat{t}_{unb}) = \dfrac{Var(\hat{t}_{unb})}{Var(\hat{t}_{SRS})} = \dfrac{MSB}{S^2}$$`
+
+
+---
+
+## Variance: SRS vs. Stratified sample
+
+Cluster sampling is more precise than an equal sized SRS when `$$MSB &lt; S^2$$`
+
+`$$\Rightarrow \textrm{ between cluster variation is small}$$`
+
+`$$\Rightarrow \textrm{ measurements are heterogenous within clusters}$$`
+
+
+
+---
+
+## Measuring homogeneity within clusters
+
+- **Intraclass correlation coefficient:** for equal sized clusters
+`$$ICC = 1- \dfrac{M}{M-1} \dfrac{SSW}{SSTot}  \ \ \ \textrm{ where } -\dfrac{1}{M-1} \leq ICC \leq 1$$`
+
+&lt;br&gt;
+&lt;br&gt;
+
+--
+
+- **Adjusted R-squared:** can be used for unequal cluster sizes
+`$$R^{2}_{a} = 1-\dfrac{MSW}{S^{2}} \ \ \ \textrm{ where } 1-\dfrac{NM-1}{N(M-1)} \leq R^{2}_{a} \leq 1$$`
+
+--
+
+- **For both:** 
+
+  - values near 1 indicate **homogeneous** (similar) responses **within** clusters
+  - values near 0 indicate **heterogeneous** (dissimilar) responses **within** clusters
+  
+  
+  
+---
+
+## Design effect revisted
+
+**Equal cluster sizes:** Under this assumption the DEff of `\(\hat{t}_{unb}\)` is equal to 
+`\begin{align*}
+DEff(\hat{t}_{unb}) &amp; =  \dfrac{MSB}{S^2} \\ 
+&amp; = \dfrac{MN-1}{M(N-1)}\left( 1 + (M-1)ICC \right) \\
+&amp; = 1 + \dfrac{N(M-1)}{N-1}R^2_a
+\end{align*}`
+
+
+---
+
+## Design effect revisted
+
+What is the design effect if 
+
+- `\(N\)` is big
+- `\(M = 11\)`
+- `\(R^2_a = 0.5\)`
+
+---
+
+## Big picture
+
+- One-stage cluster sampling is "good" for precision if SSU within clusters have  very **heterogeneous** responses
+
+  - true whether or not cluster sizes are equal
+
+--
+
+- But often SSU within clusters have very **homogeneous** responses
+
+  - clusters contain "similar" observation units
+
+  - clusters defined for **cost-saving** reasons, not for precision
+
+
+---
+
+## Post-Hoc comparison
+
+
+Q: How do we compute the design effect with a **sample of data** from any one-stage cluster sample? 
+
+--
+
+**1. (Any cluster sizes)** Use sampling weights to estimate `\(Var(\hat{t}_{srs})\)`
+
+- This is what the `survey` package when you use `deff=TRUE`
+
+
+---
+
+## Post-Hoc comparison
+
+Q: How do we compute the design effect with a **sample of data** from any one-stage cluster sample? 
+
+--
+
+**2. Equal cluster sizes:** Estimate population sum of square values from **sample** mean square values `\(msw\)` and `\(msb\)`:
+`$$\widehat{SSW} = N(M-1)msw \ \ \ \ \ \widehat{SSB} = (N-1)msb$$` 
+
+--
+
+The estimated design effect is
+`\begin{align*}
+\widehat{DEff}(\hat{t}_{unb}) &amp; =  \dfrac{\widehat{MSB}}{\hat{S}^2}  = \dfrac{msb}{(\widehat{SSW}  + \widehat{SSB})/(NM-1)}
+\end{align*}`
+
+
+
+---
+
+## Estimating `\(ICC\)` and `\(R^2_a\)`
+
+`$$\widehat{SSW} = N(M-1)msw, \ \ \ \ \ \widehat{SSB} = (N-1)msb, \ \ \ \ \ \widehat{SST} = \widehat{SSB} + \widehat{SSW}$$` 
+
+- Estimated `\(ICC\)` is
+`$$ICC = 1- \dfrac{M}{M-1} \dfrac{\widehat{SSW} }{\widehat{SST}}$$`
+
+- Estimated `\(R^2_a\)` is
+`$$\hat{R}^{2}_{a} = 1-\dfrac{msw}{\hat{S}^2}$$`
+
+---
+
+
+## Example - GPA
+
+`\(N = 100\)`, `\(n = 5\)`, `\(M_i = 4\)`, `\(M_0  = 400\)`
+
+
+  |  Suite 1  |  Suite 2  |  Suite 3  |  Suite 4  |  Suite 5 
+----- | ------ | ------- | ----- | ----- | ---- 
+1  |  3.08  |  2.36  |  2.00  |  3.00  |  2.68 
+2  |  2.60  |  3.04  |  2.56  |  2.88  |  1.92 
+3  |  3.44  |  3.28  |  2.52  |  3.44  |  3.28 
+4  |  3.04  |  2.68  |  1.88  |  3.64  |  3.20 
+total  |  12.16  |  11.36  |  8.96  |  12.96  |  11.08 
+
+
+
+
+```r
+&gt; dorm &lt;- read.csv("http://math.carleton.edu/kstclair/data/Dorm_Cluster.csv")
+&gt; dplyr::glimpse(dorm)
+Rows: 20
+Columns: 2
+$ gpa  &lt;dbl&gt; 3.08, 2.60, 3.44, 3.04, 2.36, 3.04, 3.28, 2.68, 2.00, 2.56, 2.52,~
+$ room &lt;int&gt; 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+```
+
+---
+
+## Example - GPA
+
+`\(N = 100\)`, `\(n = 5\)`, `\(M_i = 4\)`, `\(M_0  = 400\)`
+
+
+What is the design effect, ICC and `\(R^2_a\)` for estimating mean GPA?
+
+
+```r
+&gt; dorm_lm &lt;- lm(gpa ~ factor(room), data = dorm)
+&gt; anova(dorm_lm)
+Analysis of Variance Table
+
+Response: gpa
+             Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+factor(room)  4 2.2557 0.56392  3.0476 0.05039 .
+Residuals    15 2.7756 0.18504                  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+---
+
+
+
+---
+
+##  Lohr Examples 5.6: design effect of 2.245
+
+What if cluster sizes are not equal? 
+
+```r
+&gt; alg_lm &lt;- lm(score ~ factor(class), data = algebra)
+&gt; anova(alg_lm)
+Analysis of Variance Table
+
+Response: score
+               Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+factor(class)  11   7086  644.14  2.1184 0.01915 *
+Residuals     287  87270  304.08                  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+&gt; msb &lt;- 644.14 
+&gt; msw &lt;- 304.08 
+&gt; msb/var(algebra$score)   # rough DEff guess
+[1] 2.03437
+```
+
+---
+
+##  Lohr Examples 5.6: design effect of 2.245
+
+What if cluster sizes are not equal? 
+
+```r
+&gt; summary(alg_lm)$adj.r.squared  # rough R^2_a guess
+[1] 0.03964506
+&gt; library(dplyr)
+&gt; algebra %&gt;%
++   group_by(class) %&gt;%
++   summarize(Mi = n()) %&gt;%  # gets Mi values by class
++   summarize(mean(Mi))      # mean Mi per class
+# A tibble: 1 x 1
+  `mean(Mi)`
+       &lt;dbl&gt;
+1       24.9
+&gt; 1 +  187*(25-1)*.04/(187-1)  # rough DeFF guess based on R^2_a
+[1] 1.965161
+```
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

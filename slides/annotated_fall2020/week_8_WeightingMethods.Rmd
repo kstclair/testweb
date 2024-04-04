@@ -1,0 +1,224 @@
+---
+title: "Weighting methods for Nonresponse"
+author: "Stat 260, St. Clair"
+subtitle: "Week 8 (8.5)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL,tidy.opts=list(width.cutoff=60),tidy=FALSE,eval=TRUE,eval=TRUE, warning=FALSE, message  = FALSE, fig.width = 11, fig.height = 7)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+
+## Assume MAR mechanism
+
+**Missing at Random given covariates (MAR)**
+
+- $\phi_i$  depends on $x_i$ but not $y_i$ (given $x_i$)
+$$
+\phi_i(x_i) = P(R_i = 1 \mid x_i) =  P(R_i = 1 \mid x_i, y_i)
+$$
+
+- *ignorable* nonresponse: "Model" $\phi$ given $x$, then nonresponse can be ignored
+
+
+---
+
+## Weighting methods for nonresponse
+
+**Weighting class adjustment**
+
+  - use known covariates from the selected **sample**
+  - e.g. urban/rural status of all selected units
+
+**Poststratification**
+
+  - use known covariates from the  **population**
+  - e.g. urban/rural proportions in the population
+
+<br>
+
+**Covariates** 
+- measurable variables we think are associated with nonresponse
+  
+- here: must be categorical variables
+  
+- within each combination of covariates: 
+  - $\phi_i$ is the same
+  - respondents and nonrespondents have similar responses $y_i$
+  
+  
+---
+
+## Weighting class adjustment
+
+**Basic idea:**
+
+- $w_i = 1/\pi_i$ is the sampling weight
+  - based on full sample of $n = n_R + n_M$ units
+
+- Probability a unit is selected AND responds:
+
+---
+
+## Weighting class adjustment
+
+**Basic idea:**
+
+- $w_i = 1/\pi_i$ is the sampling weight
+  - based on full sample of $n = n_R + n_M$ units
+  
+- The weighting class adjusted weights:
+$$
+\tilde{w}_i = \dfrac{1}{\pi_i \phi_i} = \dfrac{w_i}{\hat{\phi}_i}
+$$
+
+
+**Weighting class adjusted estimates**
+$$\hat{t}_{wc} = \sum_{\textrm{respondents}} \tilde{w}_i y_i, \ \ \ \ \ \ \ \  \hat{\bar{y}}_{wc} = \dfrac{\sum_{\textrm{respondents}} \tilde{w}_i y_i}{\sum_{\textrm{respondents}} \tilde{w}_i}$$
+
+
+---
+
+## Weighting class adjustment
+
+**Estimating the nonresponse probability** 
+
+- Divide entire sample into known classes based on $x$ covariates
+
+- For all responding units in class $c$
+$$
+\hat{\phi}_c = \dfrac{\sum_i w_i \textrm{ for responding units in class } c}{\sum_i w_i \textrm{ for all sampled units in class } c}
+$$
+
+- Weight for all responding units $i$ in class $c$
+$$
+\tilde{w}_i =  \dfrac{w_i}{\hat{\phi}_c}
+$$
+
+
+
+---
+
+## Example: Weighting class adjustment
+
+
+- SRS of $n=100$ likely voters from a population of $N=1000$
+
+- Response: Trump voter
+
+- Parameter $p$: proportion for Trump
+
+- Covariate: Education (college grad or not)
+
+- Assume: nonresponse only depends on education
+
+
+
+---
+
+## Example: Weighting class adjustment
+
+class | $n$ | $n_R$ | $\hat{p}$ | $\hat{\phi}_c$ | $1/\hat{\phi}_c$ | $\tilde{w}_c$
+----- | --- | ----- | --------- | -------------- | ------------  | ------------
+college | 34 | 17 | 0.35 |  | |
+not | 66 | 18 | 0.50 | |  | 
+all | 100 | 35 | 0.43 | ---------- | ----------- | -----------
+
+What are the weighting class adjusted weights?
+
+---
+
+## Example: Weighting class adjustment
+
+class | $n$ | $n_R$ | $\hat{p}$ | $\hat{\phi}_c$ | $1/\hat{\phi}_c$ | $\tilde{w}_c$
+----- | --- | ----- | --------- | -------------- | ------------
+college | 34 | 17 | 0.35 | 0.5 | 2  | 20 
+not | 66 | 18 | 0.50 |  0.27 | 3.7 | 36.67
+all | 100 | 35 | 0.43 | ----- | ----- | ----
+
+What is the weighting class adjusted proportion?
+
+
+---
+
+## Exercise 5.15: Weighting class adjustment
+
+- Exercise 15: Treated a one-stage sample of teachers as  two-stage design due to nonresponse. 
+
+- One stage sample of size $n$ from $N$ clusters.
+
+- Due to nonresponse, we only have $m_i$ respondents from the $M_i$ units in cluster $i$
+
+- What are the weighting class adjusted weights?
+
+---
+
+---
+
+
+
+## Poststratification
+
+**Basic idea:**
+
+- Only consider respondents
+
+- $w_i$ are sampling weight
+  - could be weight class adjusted, or
+  - could be based on responding sample of $n_R$ units
+
+- Divide population into poststratum of size $N_h$
+
+- For unit $i$ in poststratum $h$:
+$$w^*_i = \dfrac{w_i}{\sum_{i \in \textrm{stratum } h} w_i/N_h}$$
+
+---
+
+## Poststratification
+
+$$w^*_i = \dfrac{w_i}{\sum_{i \in \textrm{stratum } h} w_i/N_h}$$
+
+- What will $\sum_{i \in \textrm{stratum } h} w_i/N_h$ be if nonresponse is *not* related to the poststratification covariates?
+
+<br>
+<br>
+<br>
+<br>
+
+
+- What will $\sum_{i \in \textrm{stratum } h} w_i/N_h$ be if nonresponse in stratum $h$ is larger than in other stratum?
+
+
+
+---
+
+## Poststratification
+
+$$w^*_i = \dfrac{w_i}{\sum_{i \in \textrm{stratum } h} w_i/N_h}$$
+
+
+What is $w^*_i$ for a SRS?
+
+---
+
+## Other methods for nonresponse
+
+- Weighting methods can get complex very fast, depending on the number of classes/poststrata
+
+  - concern when sample sizes are small or weights really big
+
+- Other methods include
+
+  - Raking 
+  
+  - Regression modeling

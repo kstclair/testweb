@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Ch. 5: Optimal sample size allocation for cluster sampling</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Math 255, St. Clair" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies.css" rel="stylesheet" />
+    <link href="libs/remark-css/hygge.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Ch. 5: Optimal sample size allocation for cluster sampling
+### Math 255, St. Clair
+
+---
+
+
+
+
+## Determining sample sizes for a cluster sample
+
+.large[
+**Problem:** You have a quantitative variable `\(y\)` and you want to estimate its population mean/total.
+]
+
+--
+
+.large[
+**Question 1:** How many SSU (elements) to sample?
+
+**Question 2:** How many PSU (clusters) to sample?
+
+]
+
+--
+.large[
+**Optional:** How to do this in an optimal way to (a) achieve a desired margin of error or (b) not exceed by fixed survey budget?
+
+- An optimal solution is "easily" computable assuming equal cluster sizes! 
+    - `\(M\)`'s are the equal and `\(m\)`'s are equal
+
+]
+---
+
+## Optimal Allocation
+
+.large[
+This allocation is **optimal** because it both
+- **minimizes costs** for a fixed SE/margin of error, *or* 
+- **minimizes SE/margin of error**  for a fixed survey cost.
+
+]
+--
+
+.large[
+**Mathematical Problem:** 
+
+- Let `\(c_{1}\)` be the cost per PSU (cluster) and `\(c_{2}\)` be the cost per SSU (element).  With `\(c_0\)` fixed costs, the total survey costs are
+`$$C(m, n) = c_0 + c_1n + c_2(mn)$$`
+- Variance is also a function of `\(m\)` and `\(n\)` and ANOVA MS. 
+`$$V(\hat{\bar{y}}_{unb}; m, n) = \dfrac{N^2}{(NM)^2}\left( 1- \dfrac{n}{N}\right) \dfrac{S^2_t}{n} + \dfrac{N}{n(NM)^2} \sum_i M^2 \left( 1- \dfrac{m}{M}\right)\dfrac{S^2_i}{m}  \\
+= \left( 1- \dfrac{n}{N}\right) \dfrac{MSB}{nM} + \left( 1- \dfrac{m}{M}\right) \dfrac{MSW}{nm}$$`
+]
+
+---
+
+## Optimal Allocation: 1. SSU sample size
+
+.large[
+**Solution:** Use Lagrange Multiplier method to minimize one function  (C or V) subject to the contraints of the other function.
+
+- The optimal SSU (element) sample size is
+`$$m_{opt} = \sqrt{\dfrac{c_1M(N-1)(1-R^2_a)}{c_2 (NM-1)R^2_a} } \approx \sqrt{\dfrac{c_1(1-R^2_a)}{c_2 R^2_a} } \ \ \textrm{when } N &gt; &gt; M$$`
+where `\(R^2_a = 1- \dfrac{MSW}{S^2}\)` is (roughly) the proportion of variability in `\(y\)` explained by the clusters
+]
+
+--
+.large[
+- sample lots of SSU when
+    - PSU are more expensive, `\(c_1 &gt; c_2\)`
+    - clusters are heterogeneous, `\(R^2_a &lt; 0.5\)`
+]
+
+---
+
+
+## Optimal Allocation: 2. PSU sample size: 
+### (a) achieving a margin of error
+
+.large[
+**Problem:** How many PSU to sample to estimate `\(\bar{y}_{\mathcal{U}}\)` with `\((1-\alpha)100\%\)` confidence and a margin of error `\(e = z_{\alpha/2} SE(\hat{\bar{y}}_{unb})\)`?
+]
+--
+
+.large[
+**Solution:** Get optimal SSE size `\(m_{opt}\)`, if you ignore the FPC then
+`$$n_{opt} = \dfrac{ \nu z^{2}_{\alpha/2}}{e^{2}} \ \ \textrm{  where  }  \ \ \nu =  \dfrac{MSB}{M} + \left( 1- \dfrac{m_{opt}}{M}\right) \dfrac{MSW}{m_{opt}}$$`
+
+- If `\(N\)` is smaller, don't ignore FPC and use:
+`$$n_{opt} =  \dfrac{ \nu z^{2}_{\alpha/2}}{e^{2} +\dfrac{ z^2MSB}{NM}}$$`
+
+- To estimate `\(t\)` with `\(e_{t}\)` margin of error, just set `\(e=e_{t}/(NM)\)`.
+
+]
+
+---
+
+## Optimal Allocation: 2. PSU sample size: 
+### (b) Do not go over budget
+
+.large[
+
+**Problem:** How many PSU to sample if your budget is `\(C\)` dollars (or man hours, etc...)?
+
+**Solution:** Get optimal SSE size `\(m_{opt}\)`, then
+`$$n_{opt} = \dfrac{C - c_{0}}{c_1 + c_2m_{opt}}$$`
+]
+
+---
+
+## Optimal Allocation
+
+.large[
+- The previous solutions for `\(n\)` are optimal when `\(m_{opt}\)` is used
+    - but you can use any `\(m\)` to obtain a given ME or cost, but it will not minimize the value of the other function
+]
+
+--
+
+.large[
+- You need a guess at MSB and MSW
+
+    - guess at variability of cluster totals: `\(MSB = S^2_t/M\)`
+    
+    - guess at variability of within clusters: `\(MSW = \sum_{i}^{N} S^2_i/N\)`
+
+]
+
+---
+
+## Example: Dorms
+
+.large[
+- New GPA study: want to estimate average dorm GPA with a 95% ME of 0.2
+    - `\(N=100\)` rooms with `\(M=4\)` students per room
+    
+- Previous study:  One-stage example 1(b)
+    - `\(msw = 0.18504\)`, `\(msb = 0.56392\)` and `\(\hat{S}^2 = 0.279\)`
+    - `\(\hat{R}^2_a = 1-0.18504/0.279 \approx 0.337\)`
+]
+--
+
+.large[
+- Costs?  `\(c_1 = 2\)` minutes to travel between rooms and `\(c_2 = 1\)` minute to talk to each student. 
+- We want to minimize cost and get a ME of `\(e=0.2\)`
+]
+
+---
+
+## Example: Dorms
+
+.large[
+- SSU sample size:
+$$
+m_{opt} = \sqrt{\dfrac{2(4)(100-1)(1-0.337)}{1(400-1)(0.337)} } \approx 1.98 \approx 2
+$$
+    
+- Sample 2 students per room
+]
+
+
+```r
+&gt; (m_opt &lt;- sqrt(2*4*(100-1)*(1-0.337)/(1*(400-1)*0.337)) )
+[1] 1.976141
+```
+
+---
+
+## Example: Dorms
+
+
+.large[
+- PSU sample size:
+`$$\nu =  \dfrac{0.56392}{4} + \left( 1- \dfrac{2}{4}\right) \dfrac{0.18504}{4} \approx 0.18724$$`
+
+- Using FPC: 
+`$$n_{opt} =  \dfrac{ (0.18724) 1.96^{2}}{0.2^{2} +\dfrac{ 1.96^0.56392}{400}} \approx 15.8 \approx 16$$`
+- Optimal solution: Sample 16 rooms, 2 students per room.
+]
+
+
+```r
+&gt; (nu &lt;- 0.56392/4 + (1-2/4)*0.18504/2 )
+[1] 0.18724
+&gt; (n_opt &lt;- 1.96^2*nu/(.2^2 + 1.96^2*0.56392/400) )
+[1] 15.8381
+```
+
+
+---
+
+## Example: Dorms - check answer
+
+.large[
+- We used `\(z=1.96\)` for 95% confidence, but we should be using a t-distribution with `\(n-1\)` degrees of freedom for CI when `\(n\)` is "small"
+
+- Recheck solution with our larger multiplier, suggests a larger `\(n\)`
+
+```r
+&gt; qt(.975, df= 16-1)
+[1] 2.13145
+&gt; (n_opt &lt;- qt(.975,15)^2*nu/(.2^2 + qt(.975,15)^2*0.56392/400) )
+[1] 18.33097
+```
+]
+
+--
+
+.large[
+- Using a more accurate multiplier says we need `\(n\)` above 18! 
+- Try using `\(n=19\)` 
+
+```r
+&gt; qt(.975, df= 19-1)
+[1] 2.100922
+&gt; (n_opt &lt;- qt(.975,18)^2*nu/(.2^2 + qt(.975,18)^2*0.56392/400) )
+[1] 17.87983
+```
+- Final answer: `\(n=19\)` will give a ME of at most 0.2
+
+]
+
+
+---
+## Optimal Allocation: Unequal cluster sizes
+
+
+.large[
+- What if your clusters are different sizes?!
+
+    - if clusters are **not too variable**, the (almost) optimal solution could use `\(\bar{M}\)` to get `\(m_{opt}\)`
+]
+
+--
+
+.large[
+- If clusters sizes are variable, don't use the optimal solution for equal sizes!
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,167 @@
+---
+title: "`Survey` package: unequal probabilities of selection (WOR)"
+author: "Stat 260, St. Clair"
+subtitle: "Week 9"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL,tidy.opts=list(width.cutoff=60),tidy=FALSE,eval=TRUE,eval=TRUE, warning=FALSE, message  = FALSE, fig.width = 11, fig.height = 6)
+library(survey)
+library(ggplot2)
+```
+
+## Unequal probability sampling
+
+What you need:
+
+- $\pi_i$ inclusion probabilities for selected units
+
+- $\pi_{ij}$ joint inclusion probabilities for selected units
+
+  - optional, if not included you get *with* replacement overestimation of variance
+
+
+---
+
+## Design object: Unequal probability sampling
+
+
+- `id` PSU id (often just `id = ~1`)
+
+- `fpc` inclusion probabilities $\pi_{i}$ for your sampled units
+
+- `pps` a `ppsmat` object that contains the inclusion probability matrix 
+
+  - something like `pps=ppsmat(mat)` where `mat` is a matrix with $\pi_{ij}$ on the off-diagonals and $\pi_i$ on the diagonals.
+  
+  - if left out, you get the without replacement SE (Lohr equation 6.24)
+  
+- `variance` (optional) specifies variance formula
+  - default is Horvitz-Thompson SE estimate (Lohr equation 6.22)
+  
+  - `YG` is Sen-Yates-Grundy (SYG) formula (Lohr equation 6.23)
+
+
+- `weights` are not specified!
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+**Design**
+
+- Sample 15 counties in 1992 using initial selection probabilities that are proportional to the 1987 farming acreage (`acres87`) in each county (WOR)
+
+```{r}
+agpps<- read.csv("http://math.carleton.edu/kstclair/data/agpps.csv")
+dplyr::glimpse(agpps)
+```
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `id`: counties so could be `~1` or `~county`
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `fpc`: `pii` gives the county inclusion probabilities 
+
+```{r}
+ggplot(agpps, aes(x = acres87, y = pii)) + 
+  geom_point()
+```
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `pps`: joint inclusion probs are given by the columns `jtprob1` - `jtprob15`
+
+- For example,  $\pi_{12,15} = \pi_{15,12} = 0.000377359$
+```{r}
+agpps$jtprob12[15]   # pi_12,15
+agpps$jtprob15[12]   # pi_15,12
+```
+
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+- `pps`: we need a matrix
+
+- Columns 10 - 24 are the joint probs:
+```{r}
+incl_mat<- as.matrix(agpps[,10:24])  
+```
+
+- Then we need to fill in unit inclusion probs on the diagonal:
+```{r}
+diag(incl_mat) <- agpps$pii
+incl_mat
+```
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+
+Estimating total farm acres  in 1992: $\hat{t}_{HT} = 992,665,088$ with a SE of $SE_{HT}(\hat{t}_{HT}) = 73,550,378$
+
+```{r}
+ag_pps<- svydesign(id = ~1, 
+                   fpc = ~pii,  
+                   pps = ppsmat(incl_mat), 
+                   data = agpps) ## HT
+svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+```
+
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+Changing how the SE is estimated to the Yates-Grundy:  $\hat{t}_{HT} = 992,665,088$ with a SE of $SE_{YG}(\hat{t}_{HT}) = 11,015,154$
+
+```{r}
+ag_pps<- svydesign(id = ~1, 
+                   fpc = ~pii,  
+                   pps = ppsmat(incl_mat), 
+                   variance = "YG",
+                   data = agpps) 
+svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+```
+
+
+
+---
+
+## Lohr Example 6.10: Ag census data
+
+Changing how the SE is estimated to the With Replacement version:  $\hat{t}_{HT} = 992,665,088$ with a SE of $SE_{WR}(\hat{t}_{HT}) = 11,508,289$
+
+```{r}
+ag_pps<- svydesign(id = ~1, 
+                   fpc = ~pii,  
+                   data = agpps) 
+svytotal(~acres92, ag_pps, deff=T)  # H-T SE
+```

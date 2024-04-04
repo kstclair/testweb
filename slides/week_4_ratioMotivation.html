@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Ratio estimation - why and when</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Ratio estimation - why and when
+## Week 4 (4.1 up to 4.1.2)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+## Example 1: revisit petition
+Signatures to a petition were collected on 676 sheets of paper. Along with each signature is a record of whether they are registered to vote. 
+
+How do you measure the proportion of signatures that belong to registered voters on all sheets?
+
+---
+
+## Example 1: revisit petition
+You take a SRS of 50 sheets and find 1515 signatures, 771 of which are from registered voters.  
+
+
+Use this information to estimate the proportion of all signatures that are from registered voters. 
+
+---
+
+## Example 1: revisit petition
+The estimated proportion signatures belongin to registered voters is
+$$
+\hat{p} = \dfrac{771}{1515} = 0.5089
+$$
+
+Why can we **not use a SRS SE formula** to measure the variability of this estimate?
+
+---
+
+## Ratio estimation: for a ratio parameter
+
+- For each sampling unit, we measure two variables: `\(x_i\)` and `\(y_i\)`
+
+- **Ratio Parameter** Suppose our parameter of interest looks lik
+`$$B = \dfrac{\sum_{i=1}^N y_i}{\sum_{i=1}^N x_i} = \dfrac{t_y}{t_x} = \dfrac{\bar{y}_{\mathcal{U}}}{\bar{x}_{\mathcal{U}}}$$`
+
+&lt;br&gt;
+&lt;br&gt;
+
+- **Estimator** with a SRS of units:
+`$$\hat{B} = \dfrac{\sum_{i=1}^n y_i}{\sum_{i=1}^n x_i} = \dfrac{\bar{y}}{\bar{x}}$$`
+
+
+&lt;br&gt;
+&lt;br&gt;
+
+- SE and bias: next video
+
+
+---
+
+## Example 2: food costs
+
+If there are `\(N\)` households in the city, how would you form the parameter that measures the average weekly food costs per resident in Northfield if you plan to take a SRS of `\(n\)` households in the city?
+
+---
+
+## Example 3: food costs take 2
+
+Suppose you don't know `\(N\)`, the number of households (sampling units) in the population.
+
+You do know `\(t_{income}\)` from IRS records.
+
+If you have a SRS of `\(n\)` households with income recorded, how can you estimate `\(N\)`?
+
+
+---
+
+## Example 3: food spending take 2
+
+How can you estimate the total weekly food costs for all residents of Northfield if you have an SRS of `\(n\)` households and know the total income for all residents.
+
+
+---
+
+## Ratio estimation for a mean or total
+
+- Suppose we know a population mean or total for an **auxiliary** variable `\(x\)` `$$t_x \textrm{ and/or } \bar{x}_{U} \textrm{ are known}$$`
+
+
+- **Population total** for response `\(y\)` can be written
+$$
+t_y = \dfrac{t_y}{t_x}  t_x = B t_x
+$$
+
+&lt;br&gt;
+
+
+
+- **Population total** for response `\(y\)` can be written
+`$$\bar{y}_{\mathcal{U}}=  \dfrac{\bar{y}_{\mathcal{U}}}{\bar{x}_{\mathcal{U}}} \bar{x}_{\mathcal{U}} = B \bar{x}_{\mathcal{U}}$$`
+
+&lt;br&gt;
+
+
+
+
+- **Estimators** use an estimated ratio `\(\hat{B}= \dfrac{\sum_{i=1}^n y_i}{\sum_{i=1}^n x_i} = \dfrac{\bar{y}}{\bar{x}}\)`
+
+
+
+---
+
+## Example 4: a classic
+
+The 1920 census found that the total number of residents living in 196 selected major U.S. cities was 22,919 thousand people. 
+
+We would like to determine the total number of residents living in these cities in 1925 (a year with no census).
+
+
+who? | 1920 `\((x)\)` | 1925 `\((y)\)` 
+----------- | ------ | -----
+population | `\(t_x = 22,919\)` | `\(t_y = ??\)`
+
+---
+
+## Example 4: a classic
+
+A random sample of 49 of these cities was taken in 1925 and for each city in the sample the 1920 and 1925 population sizes (in the thousands) were recorded:
+
+who? | 1920 `\((x)\)` | 1925 `\((y)\)` 
+----------- | ------ | -----
+population | `\(t_x = 22,919\)` | `\(t_y = ??\)`
+sample |  `\(\sum_{i=1}^{49} x_i = 5054\)` | `\(\sum_{i=1}^{49} y_i = 6262\)`
+
+What is a SRS estimate of the total number of people in these 196 cities in 1920? in 1925? 
+
+---
+
+## Example 4: a classic
+
+who? | 1920 `\((x)\)` | 1925 `\((y)\)` 
+----------- | ------ | -----
+population | `\(t_x = 22,919\)` | `\(t_y = ??\)`
+sample |  `\(\sum_{i=1}^{49} x_i = 5054\)` | `\(\sum_{i=1}^{49} y_i = 6262\)`
+
+SRS estimates:
+`$$\hat{t}_{1920} = 20,216 \ \ \ \ \hat{t}_{1925} = 25,048$$`
+
+Does this SRS over or under estimate the 1920 total? Is it likely that the SRS does the same for the 1925 total?
+
+
+
+---
+
+## Example 4: a classic
+
+
+who? | 1920 `\((x)\)` | 1925 `\((y)\)` 
+----------- | ------ | -----
+population | `\(t_x = 22,919\)` | `\(t_y = ??\)`
+sample |  `\(\sum_{i=1}^{49} x_i = 5054\)` | `\(\sum_{i=1}^{49} y_i = 6262\)`
+
+What is a **ratio estimate** of the total number of people in these 196 cities in 1925?  Is this greater or smaller than the SRS estimate?
+
+
+---
+
+## Calibration weights
+
+- Usual SRS sampling weights are `\(N/n\)`
+
+- Ratio estimates of total/mean have an added **calibration weight** of 
+`$$g_i = \dfrac{t_x}{\hat{t}_x} = \dfrac{\bar{x}_{\mathcal{U}}}{\bar{x}}$$`
+
+- These weights adjust the SRS estimate up or down, depending on whether the auxilary mean/total is over- or underestimated in the SRS.
+
+
+
+---
+
+## Example 4: a classic
+
+
+who? | 1920 `\((x)\)` | 1925 `\((y)\)` 
+----------- | ------ | -----
+population | `\(t_x = 22,919\)` | `\(t_y = ??\)`
+sample |  `\(\sum_{i=1}^{49} x_i = 5054\)` | `\(\sum_{i=1}^{49} y_i = 6262\)`
+
+`$$\hat{t}_{y, srs} = 25,048 \ \ \ \ \hat{t}_{y,ratio} = 28,397$$`
+
+What is the calibration weight for this ratio estimator?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

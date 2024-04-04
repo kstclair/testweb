@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Comparing Stratified to SRS</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Comparing Stratified to SRS
+## Week 3 (3.4)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+## When is a Stratified sample more precise than SRS?
+
+When does
+`$$SE(\hat{t}_{str}) \overset{???}{&lt;} SE(\hat{t}_{SRS})$$`
+&lt;br&gt;
+&lt;br&gt;
+
+--
+
+**answer:** It depends on the measurement's  **Analysis of Variance** (ANOVA)
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+
+```r
+&gt; # Design effect comparing stratified to SRS
+&gt; svytotal(~acres92 + farms92, design_strat, deff=T) 
+            total        SE   DEff
+acres92 909736035  50417248 0.7945
+farms92   1961190     74726 0.9751
+```
+
+---
+
+## Lohr Examples 3.2 and 3.6: `acres92` by strata
+
+
+```r
+&gt; ggplot(agpop, aes(x=region, y = acres92)) + 
++   geom_boxplot()
+```
+
+![](week_3_StratvsSRS_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: `farms92` by strata
+
+
+
+```r
+&gt; ggplot(agpop, aes(x=region, y = farms92)) + 
++   geom_boxplot()
+```
+
+![](week_3_StratvsSRS_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+
+
+---
+
+## Population ANOVA
+
+Let `\(y_{hj}\)` be your measurement.  
+
+--
+
+ANOVA breaks the **total** sum of squares of `\(y\)` into **between strata** and **within strata** variation:
+$$
+SST = SSB + SSW
+$$
+&lt;br&gt;
+&lt;br&gt;
+
+
+--
+
+- `\(SST = \sum_{h=1}^H \sum_{j=1}^{N_h} (y_{hj} - \bar{y}_{\mathcal{U}})^2 = (N-1)S^2\)`
+
+&lt;br&gt;
+
+--
+
+
+- `\(SSB = \sum_{h=1}^H N_h(\bar{y}_{h,\mathcal{U}} - \bar{y}_{\mathcal{U}})^2\)`
+
+&lt;br&gt;
+
+--
+
+
+- `\(SSW = \sum_{h=1}^H \sum_{j=1}^{N_h} (y_{hj} - \bar{y}_{h,\mathcal{U}})^2 = \sum_{h=1}^H (N_h-1)S_h^2\)`
+
+
+---
+
+## Variance: SRS
+
+For a SRS of size `\(n\)`, we can write the variance, `\(SE^2\)`,  of `\(\hat{t}_{SRS}\)` as
+`$$Var(\hat{t}_{SRS}) = N^2\left( 1 - \dfrac{n}{N}\right) \dfrac{SSB + SSW}{n(N-1)}$$`
+where `\(S\)` is the SD of the measurements in the population. 
+
+
+
+
+---
+
+## Variance: Stratified sample
+
+For a stratified sample, assume
+
+- overall sample size is `\(n = n_1 + \dotsm + n_h\)`
+
+- we used **proportional allocation** to determine stratum sample sizes:
+$$
+n_h = n \times \dfrac{N_h}{N}
+$$
+---
+
+## Variance: Stratified sample
+
+For a stratified sample with proportional allocation,  we can write the variance of `\(\hat{t}_{str}\)` as
+`$$Var(\hat{t}_{str}) = N\left( 1 - \dfrac{n}{N}\right) \dfrac{\sum_{h=1}^H S^2_h + SSW}{n}$$`
+where `\(S\)` is the SD of the measurements in the population. 
+
+
+
+---
+
+## Variance: SRS vs. Stratified sample
+
+Using proportional allocation, 
+`$$SE(\hat{t}_{str}) &lt; SE(\hat{t}_{SRS})$$`
+when
+
+`$$\sum_{h=1}^H \left(1-\dfrac{N_h}{N}\right) S^2_h &lt; SSB$$`
+
+
+---
+
+## Example: One Population, two stratifications
+
+
+
+.pull-left[
+![](week_3_StratvsSRS_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+
+**Strata = Class**: `\(SSB = 0.0007\)`
+
+- 115 population: `\(N_{115} = 71\)`, `\(S^2_{115} = 15.7\)`
+
+- 215 population: `\(N_{215} = 57\)`, `\(S^2_{215} = 17.8\)`
+
+]
+
+
+---
+
+## Example: One Population, two stratifications
+
+
+
+.pull-left[
+![](week_3_StratvsSRS_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+**Strata = Sex**: `\(SSB = 846.0\)`
+
+- Female population: `\(N_{F} = 68\)`, `\(S^2_{F} = 8.4\)`
+
+- Male population: `\(N_{M} = 60\)`, `\(S^2_{M} = 11.7\)`
+
+]
+
+
+
+
+---
+
+## Post-Hoc comparison
+
+Q: How do we compute the design effect with a **sample of data** from any stratified sample? (not just one with proportional allocation)
+
+`$$DEff = \dfrac{V(\bar{y}_{str})}{V(\bar{y}_{SRS})} = \dfrac{\sum_{h=1}^H \left(\frac{N_h}{N}\right)^2 \left(1-\frac{n_h}{N_h} \right) \frac{S^2_h}{n_h}}{\left( 1- \frac{n}{N}\right) \frac{S^2}{n}}$$`
+
+&lt;br&gt;
+
+-  `\(V(\bar{y}_{str})\)`: estimate from the SE of your stratified data
+
+-  `\(V(\bar{y}_{srs})\)`: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance `\(S^2\)`
+
+
+---
+
+## Post-Hoc comparison
+
+
+`\(V(\bar{y}_{srs})\)`: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance `\(S^2\)`
+
+**1.** Use sampling weights (section 7.3) to estimate `\(S^2\)` 
+
+---
+
+## Post-Hoc comparison
+
+
+
+`\(V(\bar{y}_{srs})\)`: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance `\(S^2\)`
+
+
+**2.** Estimate the population **sum of squares** values from your stratified data's ANOVA:
+$$
+\hat{S}^2 = \dfrac{\widehat{SST}}{N-1} = \dfrac{\widehat{SSB}+ \widehat{SSW}}{N-1} 
+$$
+where `\(SS\)` are estimated from the stratified data as
+`$$\widehat{SSW} = (N-H) msw_{sample} \ \ \ \ \ \  \widehat{SSB} = \sum_{h=1}^H N_h(\bar{y}_{h} - \bar{y}_{str})^2$$`
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+Compare stratified to SRS when estimating the mean number of large farms (`largef92`) in 1992 in the US:
+
+```r
+&gt; # Design effect comparing stratified to SRS
+&gt; svymean(~largef92, design_strat, deff=T) 
+            mean      SE  DEff
+largef92 56.6980  3.5577 0.865
+```
+
+**Let's estimate this DEff "by hand"**
+
+- Numerator is `\(3.5577^2\)`
+
+- Denominator: need to estimate `\(S^2\)` (SD of `largef92` in the **population**)
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+Here we model `largef92` as a function of `region` (**strata**) and use `anova` to get the **sample anova table**:
+
+```r
+&gt; largef92_lm &lt;- lm(largef92 ~ region, data=agstrat)
+&gt; # "Residuals" == WITHIN strata
+&gt; # region (strata) == BETWEEN strata
+&gt; anova(largef92_lm)
+Analysis of Variance Table
+
+Response: largef92
+           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+region      3  208850   69617  16.555 5.699e-10 ***
+Residuals 296 1244705    4205                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+
+`$$msw_{sample} = 4205$$`
+
+
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+**Between Strata** sum of squares:
+
+- Overall estimated mean from stratified estimator:
+
+```r
+&gt; ybar_str &lt;- 56.6980
+```
+
+--
+
+- Within strata mean estimates:
+
+```r
+&gt; mn_region &lt;- agstrat %&gt;% 
++                 group_by(region) %&gt;%
++                 summarize(mean(largef92)) %&gt;%
++                 pull()
+&gt; mn_region
+[1]  70.912621   8.190476  38.837037 104.975610
+```
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+
+
+
+- The estimated population variance is then 
+$$
+\hat{S}^2 = \dfrac{2201681 + 12926170}{3078-1} = 4911.834
+$$
+
+--
+
+- The design effect for estimating the population mean `largef92` using this stratified sample is 
+$$
+DEff =  \dfrac{3.5577^2}{(1-300/3078)4911.834/300} \approx 0.86
+$$
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

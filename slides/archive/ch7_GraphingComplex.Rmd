@@ -1,0 +1,262 @@
+---
+title: "Ch. 7 topics: Graphing complex survey data"
+author: "Math 255, St. Clair"
+output:
+  xaringan::moon_reader:
+    chakra: libs/remark-latest.min.js
+    css: [default, rladies,hygge]    
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.height = 4.5, fig.width = 7, dev='svg', fig.align = 'center')
+library(survey)
+library(tidyverse)
+```
+
+## Goal:
+
+.large[
+Use survey data to create a visualization that represents the population.
+
+- Self-weighting samples: (SRS)
+    - Just use basic EDA tools: histogram, boxplot, scatterplots, bar graphs
+
+- Stratified samples: self-weighting within strata
+    - Basic EDA within each strata: side-by-side boxplots, faceted histograms/scatterplots, grouped bar graphs
+
+- Clustered samples: self-weighting within clusters
+    - Basic EDA within each cluster: side-by-side boxplots, faceted histograms/scatterplots, grouped bar graphs
+]
+
+---
+
+## Goal: 
+
+.large[
+Use survey data to create a visualization that represents the population.
+
+- But what if we want to visualize the distribution of a variable for the entire population, not just one strata/cluster?
+
+- What if we have a more complex sampling design?
+]
+
+---
+
+### Two-stage cluster: CA API scores
+
+.large[
+- Recall the two-stage cluster sample of schools in CA
+    - Cluster = district
+    - Elements = schools
+    - Unequal cluster and sample sizes so sampling weights vary across clusters
+
+- Goal: understand API scores in 2000 (api00)
+]
+
+---
+
+### API scores within districts: 
+
+.large[
+Represents `API00` scores within districts and variation between districts in the population
+] 
+
+```{r, echo=FALSE}
+data(api) # built-in dataset from survey package
+boxplot(api00 ~ dnum, data=apiclus2, xlab="district (cluster)", ylab="API 2000")
+title("API00 within each Cluster")
+```
+
+---
+
+### API scores in all of CA:
+
+.large[
+- What if we want a boxplot that represents API00 scores for all schools in CA, not just the schools in our sample?
+    - Create the usual survey design object and use `svyboxplot`
+]
+--
+
+.large[
+```{r, fig.height=3.3}
+api.design<-svydesign(id=~dnum+snum, fpc=~fpc1+fpc2, weights = ~pw, data=apiclus2)
+svyboxplot(api00~1,api.design, horizontal=TRUE, xlab="API00 score")
+```
+]
+
+---
+
+### API scores in all of CA:
+
+.large[
+Why does the unweighted (raw) data misrepresent API00 scores across CA?
+]
+
+```{r,fig.height=4.5,fig.width=7, echo=FALSE}
+api.design<-svydesign(id=~dnum+snum, fpc=~fpc1+fpc2, weights = ~pw, data=apiclus2)
+boxplot(apipop$api00, apiclus2$api00, ylab="API 2000",xlim=c(.5,3.5))
+svyboxplot(api00~1,api.design,add=T,at=3, width=1)
+abline(h=mean(apipop$api00), col="red")
+axis(1,c(1,2,3),labels=c("population", "raw data","weighted data"))
+title("Comparing API00 distributions")
+```
+
+---
+
+### API scores in all of CA:
+
+.large[
+Answer is in the relationship between weights and response
+- In the sample: schools with high score overrepresented (many schools with high scores but low sampling weights)
+]
+
+```{r, fig.height=3.3}
+ggplot(apiclus2, aes(x=pw, y=api00)) + geom_point() +
+  geom_hline(yintercept=mean(apipop$api00), color="red") + 
+  scale_x_log10() + labs(x="sampling weight",y="API 2000") 
+```
+
+---
+
+### Agpps: PPS ag survey data
+
+.large[
+- 15 Counties selected with probability proportional to `acres87`
+
+- Goal: estimate average `acres92`
+    - Sample mean is 614,764
+    - HT estimate is 342,552
+    - Population mean is 306,677
+]
+
+--
+.large[
+- Graphically:
+    - (unweighted) sample of 15 counties is adequate for EDA for the sample, looking for outliers
+
+    - (unweighted) sample will not reflect the population distribution of acres92
+
+    - Solution: use the sampling weights when graphing 
+]
+
+---
+
+## Weighted Boxplots
+
+.large[
+- Usual boxplot:
+    - Find 5 number summary (min,Q1,median,Q3,max)
+    - ID outliers using 1.5 IQR rule
+    - Plot 5 number summary and outliers
+]
+
+--
+.large[
+- Weighted boxplot
+    - Find Q1, median, Q3 using the weighted empirical cumulative distribution function (ecdf):
+$$\hat{F}(a) = P(Y \leq a) = \dfrac{\sum_{\textrm{all }i \textrm{ where } y_i \leq a} w_i}{\sum_{i \in \mathcal{S}} w_i}$$
+    - E.g. Q1 is the value $q_{.25}$ where $F(q_{.25}) \approx 0.25$
+]
+
+---
+
+
+```{r, echo=FALSE}
+library(SDaA)
+agpps<- read.csv("http://math.carleton.edu/kstclair/data/agpps.csv")
+incl.mat<- as.matrix(agpps[,10:24])  # joint inclusion probs (0's on diagonal)
+diag(incl.mat)<- agpps$pii  # fill diagonal entries with pi_i
+ag.pps<- svydesign(id=~1, fpc=~pii, data=agpps,  pps=ppsmat(incl.mat)) ## HT
+```
+
+## Weighted Boxplots
+
+```{r}
+ordered.agpps <- arrange(agpps, acres92) %>% select(acres92, pii)
+ordered.agpps %>% mutate(weight = 1/pii, 
+                         wt.ecdf = cumsum(weight)/sum(weight),
+                         unwt.ecdf = 1:15/15)
+```
+
+---
+
+## Weighted Boxplots
+
+
+.large[
+- In the sample, the median `acres92` is 397,883
+
+- The estimated population median `acres92` is 298,039
+
+```{r}
+svyquantile(~acres92,ag.pps, c(0,.25,.5,.75,1))
+quantile(agpps$acres92,c(0,.25,.5,.75,1))
+```
+
+]
+
+---
+
+### Agpps: PPS ag survey data
+
+.large[
+Counties with higher `acres92` have a higher inclusion probability: raw data favors large response values
+
+]
+
+```{r, echo=FALSE}
+library(SDaA)
+agpps<- read.csv("http://math.carleton.edu/kstclair/data/agpps.csv")
+incl.mat<- as.matrix(agpps[,10:24])  # joint inclusion probs (0's on diagonal)
+diag(incl.mat)<- agpps$pii  # fill diagonal entries with pi_i
+ag.pps<- svydesign(id=~1, fpc=~pii, data=agpps,  pps=ppsmat(incl.mat)) ## HT
+boxplot(agpps$acres92,xlim=c(.5,3.5),ylim=c(0,4000000))
+svyboxplot(acres92~1, ag.pps, ,ylim=c(0,4000000),add=T,at=2)
+boxplot(agpop$acres92,at=3,ylim=c(0,4000000),add=T)
+axis(1,c(1,2,3),labels=c("unweighted","weighted","population"))
+title("Acres92 distributions")
+```
+
+---
+
+## Weighted Histograms
+
+.large[
+- Usual (density) histogram:
+    - Divide data into equal width bins (b=width)
+    - Count the number of data points in each bin
+    - Height = (proportion of observations in bin)/b
+    - Area of bar = proportion of observations
+]
+--
+
+.large[
+- Weighted (density) histogram
+    - Height is weighted proportion in each bin:
+$$\textrm{height of bin } j = \dfrac{\sum_{\textrm{all } y_i \textrm{ in bin } j} w_i}{b\sum_{i \in \mathcal{S}} w_i}$$
+]
+
+---
+
+### Agpps: PPS ag survey data
+
+.large[
+Use `svyhist(~acres92, ag.pps)` to generated a weighted histogram
+
+]
+```{r, echo=FALSE}
+par(mfrow=c(1,3))
+hist(agpps$acres92,xlim=c(0,4000000),main="unweighted acres92")
+points(mean(agpps$acres92),0,col="red",cex=1.5,pch="X")
+svyhist(~acres92,ag.pps,xlim=c(0,4000000),main="weighted acres92")
+points(342551.57,0,col="red",cex=1.5,pch="X")
+hist(agpop$acres92,xlim=c(0,4000000),main="population: acres92")
+points(mean(agpop$acres92),0,col="red",cex=1.5,pch="X")
+```
+

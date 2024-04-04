@@ -1,0 +1,209 @@
+---
+title: "`Survey` package: One stage cluster sampling"
+author: "Stat 260, St. Clair"
+subtitle: "Week 6"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.height = 7, fig.width = 11)
+library(dplyr)
+library(survey)
+library(SDaA)
+```
+
+
+
+
+### One-stage cluster sampling estimation 
+
+**How** you analyze one-stage cluster sampling data depends on the **data format**
+
+**SSU-level data:** each row is a different measurement unit (SSU)
+
+```{r, eval = FALSE}
+clus_design1 <- svydesign(id = ~PSU, 
+                          fpc = ~N,    # N = number of clusters
+                          weights = ~wts,   # N/n
+                          data = clusterdata1)
+svymean(~y, clus_design1)   # ratio mean estimate
+svytotal(~y, clus_design1)  # unbiased total estimate
+```
+
+- `svytotal` will give you unbiased total estimates $\hat{t}_{unb}$
+
+  - for **mean**: divide by $M_0$, if known, to get $\hat{\bar{y}}_{unb} = \hat{t}_{unb}/M_0$, SE and CI
+
+- `svymean` will give you ratio (biased) mean estimates $\hat{\bar{y}}_{r}$
+
+  - for **total**: multiply by $M_0$, if known, to get $\hat{t}_{r} = M_0\hat{\bar{y}}_{r}$, SE and CI
+
+
+---
+
+### Lohr Examples 5.6
+
+```{r}
+algebra <- read.csv("http://math.carleton.edu/kstclair/data/algebra.csv")
+library(dplyr)
+glimpse(algebra)
+```
+
+- `class`: class identifier (cluster)
+
+- `Mi`: class size (cluster size)
+
+- `score`: student (PSU) level test score
+
+---
+
+### Lohr Examples 5.6
+
+`N` = number of classes in the population (187)
+```{r}
+algebra$N <- 187  # number of clusters in pop.
+nrow(algebra) # number of sampled SSU = NOT "n"
+```
+
+<br>
+<br>
+
+
+`n` = number of sampled classes (12)
+```{r}
+(algebra$n <- n_distinct(algebra$class) )  # n
+algebra$wts <- algebra$N/algebra$n   # weights N/n
+```
+
+---
+
+### Lohr Examples 5.6
+
+
+
+```{r}
+alg_design<- svydesign(id = ~class, 
+                       fpc= ~N, 
+                       weights= ~wts, 
+                       data=algebra)
+summary(alg_design)
+```
+
+---
+
+### Lohr Examples 5.6
+
+
+
+```{r}
+svymean(~score, alg_design)  # ratio estimate/SE of pop.mean score
+confint(svymean(~score, alg_design), df=degf(alg_design))
+degf(alg_design)   # n - 1
+```
+
+
+---
+
+### Lohr Examples 5.6
+
+
+
+```{r}
+svytotal(~score, alg_design)  # unbiased estimate/SE of pop.total 
+```
+
+---
+
+
+### One-stage cluster sampling estimation 
+
+**How** you analyze one-stage cluster sampling data depends on the **data format**
+
+**PSU-level data:** each row is a different cluster (PSU) total $t_i$ and cluster size $M_i$
+
+```{r, eval = FALSE}
+clus_design2 <- svydesign(id = ~1,     # 1 = row = PSU
+                          fpc = ~N,    # N = number of clusters
+                          weights = ~wts,   # N/n
+                          data = clusterdata2)
+svyratio(~t, ~M, clus_design2)  # ratio mean estimate 
+svytotal(~t, clus_design1)   # unbiased total estimate
+```
+
+
+- `svytotal` will give you unbiased total estimates $\hat{t}_{unb}$
+
+  - for **mean**: divide by $M_0$, if known, to get $\hat{\bar{y}}_{unb} = \hat{t}_{unb}/M_0$, SE and CI
+
+- `svyratio` will give you ratio (biased) mean estimates $\hat{\bar{y}}_{r}$
+
+  - for **total**: multiply by $M_0$, if known, to get $\hat{t}_{r} = M_0\hat{\bar{y}}_{r}$, SE and CI
+
+---
+
+### Week 5 example -  residents
+
+$N = 400, n = 5$ 
+
+ |  Block 1  |  Block 2  |  Block 3  |  Block 4  |  Block 5  |  total  |   $s^2_t$ 
+--- | ---- | ---- | ---- | ---- | ---- | ---- | ---- 
+# of Adults  |  10  |  15  |  18  |  22  |  17  |  82  |  19.3 
+Total Income  |  1100  |  1020  |  972  |  704  |  714  |  4510  |  33144 
+# Dems  |  8  |  5  |  7  |  15  |  3  |  38  |  20.8 
+
+Block (cluster) level data:
+```{r}
+block_data <- data.frame(
+  dem_tots = c( 8, 5, 7, 15, 3), 
+  block_size = c(10, 15, 18, 22, 17)
+)
+block_data
+```
+
+---
+
+### Week 5 example -  residents
+
+```{r}
+block_data$N <- 400
+block_data$n <- 5
+block_data$wts <- 400/5
+block_design <- svydesign(id = ~1, 
+                          fpc = ~N,    # N = number of blocks
+                          weights = ~wts,   # N/n
+                          data = block_data)
+```
+
+
+---
+
+### Week 5 example -  residents
+
+Estimate/SE the proportion of adults who are Democrats. Assume $M_0$ is unknown.
+
+```{r}
+svyratio(~dem_tots, ~block_size, block_design) # ratio estimate
+```
+
+
+
+---
+
+### Week 5 example -  residents
+
+Estimate/SE the proportion of adults who are Democrats. Assume $M_0 = 11,482$ is known.
+
+```{r}
+t_unb <- svytotal(~dem_tots, block_design)  # unbiased estimate
+t_unb
+coef(t_unb)/11482  # unbiased proportion
+SE(t_unb)/11482    # SE
+```
+

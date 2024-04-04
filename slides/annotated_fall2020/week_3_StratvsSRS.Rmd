@@ -1,0 +1,316 @@
+---
+title: "Comparing Stratified to SRS"
+author: "Stat 260, St. Clair"
+subtitle: "Week 3 (3.4)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, message = FALSE, warning = FALSE, fig.height = 6, fig.width = 8)
+library(dplyr)
+library(SDaA)
+library(survey)
+library(ggplot2)
+
+agstrat$N <- recode(agstrat$region, 
+                    NC = 1054, 
+                    NE = 220, 
+                    S = 1382, 
+                    W = 422)
+design_strat <- svydesign(id= ~1, 
+                        fpc= ~N, 
+                        weights= ~weight, 
+                        strata = ~region,
+                        data= agstrat)
+```
+
+## When is a Stratified sample more precise than SRS?
+
+When does
+$$SE(\hat{t}_{str}) \overset{???}{<} SE(\hat{t}_{SRS})$$
+<br>
+<br>
+
+**answer:** It depends on the measurement's  **Analysis of Variance** (ANOVA)
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+```{r}
+# Design effect comparing stratified to SRS
+svytotal(~acres92 + farms92, design_strat, deff=T) 
+```
+
+---
+
+## Lohr Examples 3.2 and 3.6: `acres92` by strata
+
+```{r}
+ggplot(agpop, aes(x=region, y = acres92)) + 
+  geom_boxplot()
+```
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: `farms92` by strata
+
+
+```{r}
+ggplot(agpop, aes(x=region, y = farms92)) + 
+  geom_boxplot()
+```
+
+
+
+---
+
+## Population ANOVA
+
+Let $y_{hj}$ be your measurement.  
+
+ANOVA breaks the **total** sum of squares of $y$ into **between strata** and **within strata** variation:
+$$
+SST = SSB + SSW
+$$
+<br>
+<br>
+
+
+- $SST = \sum_{h=1}^H \sum_{j=1}^{N_h} (y_{hj} - \bar{y}_{\mathcal{U}})^2 = (N-1)S^2$
+
+<br>
+
+
+- $SSB = \sum_{h=1}^H N_h(\bar{y}_{h,\mathcal{U}} - \bar{y}_{\mathcal{U}})^2$
+
+<br>
+
+
+- $SSW = \sum_{h=1}^H \sum_{j=1}^{N_h} (y_{hj} - \bar{y}_{h,\mathcal{U}})^2 = \sum_{h=1}^H (N_h-1)S_h^2$
+
+
+---
+
+## Variance: SRS
+
+For a SRS of size $n$, we can write the variance, $SE^2$,  of $\hat{t}_{SRS}$ as
+$$Var(\hat{t}_{SRS}) = N^2\left( 1 - \dfrac{n}{N}\right) \dfrac{SSB + SSW}{n(N-1)}$$
+where $S$ is the SD of the measurements in the population. 
+
+
+
+
+---
+
+## Variance: Stratified sample
+
+For a stratified sample, assume
+
+- overall sample size is $n = n_1 + \dotsm + n_h$
+
+- we used **proportional allocation** to determine stratum sample sizes:
+$$
+n_h = n \times \dfrac{N_h}{N}
+$$
+---
+
+## Variance: Stratified sample
+
+For a stratified sample with proportional allocation,  we can write the variance of $\hat{t}_{str}$ as
+$$Var(\hat{t}_{str}) = N\left( 1 - \dfrac{n}{N}\right) \dfrac{\sum_{h=1}^H S^2_h + SSW}{n}$$
+where $S$ is the SD of the measurements in the population. 
+
+
+
+---
+
+## Variance: SRS vs. Stratified sample
+
+Using proportional allocation, 
+$$SE(\hat{t}_{str}) < SE(\hat{t}_{SRS})$$
+when
+
+$$\sum_{h=1}^H \left(1-\dfrac{N_h}{N}\right) S^2_h < SSB$$
+
+
+---
+
+## Example: One Population, two stratifications
+
+
+
+.pull-left[
+```{r, echo=FALSE, fig.height=7, fig.width=6}
+pop <- read.csv("http://math.carleton.edu/kstclair/data/StatsClassSurvey.csv")
+b <- ggplot(pop, aes(x=Class, y=Height)) +
+  geom_boxplot() +
+  labs(title = "Stratify by Class")
+b
+```
+]
+
+.pull-right[
+
+
+**Strata = Class**: $SSB = 0.0007$
+
+- 115 population: $N_{115} = 71$, $S^2_{115} = 15.7$
+
+- 215 population: $N_{215} = 57$, $S^2_{215} = 17.8$
+
+]
+
+
+---
+
+## Example: One Population, two stratifications
+
+
+
+.pull-left[
+```{r, echo=FALSE, fig.height=7, fig.width=6}
+pop <- read.csv("http://math.carleton.edu/kstclair/data/StatsClassSurvey.csv")
+
+a <- ggplot(pop, aes(x=Sex, y=Height)) +
+  geom_boxplot() +
+  labs(title = "Stratify by Sex")
+a
+```
+]
+
+.pull-right[
+**Strata = Sex**: $SSB = 846.0$
+
+- Female population: $N_{F} = 68$, $S^2_{F} = 8.4$
+
+- Male population: $N_{M} = 60$, $S^2_{M} = 11.7$
+
+]
+
+
+
+
+---
+
+## Post-Hoc comparison
+
+Q: How do we compute the design effect with a **sample of data** from any stratified sample? (not just one with proportional allocation)
+
+$$DEff = \dfrac{V(\bar{y}_{str})}{V(\bar{y}_{SRS})} = \dfrac{\sum_{h=1}^H \left(\frac{N_h}{N}\right)^2 \left(1-\frac{n_h}{N_h} \right) \frac{S^2_h}{n_h}}{\left( 1- \frac{n}{N}\right) \frac{S^2}{n}}$$
+
+<br>
+
+-  $V(\bar{y}_{str})$: estimate from the SE of your stratified data
+
+-  $V(\bar{y}_{srs})$: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance $S^2$
+
+
+---
+
+## Post-Hoc comparison
+
+
+$V(\bar{y}_{srs})$: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance $S^2$
+
+**1.** Use sampling weights (example 7.4) to estimate $S^2$ 
+
+---
+
+## Post-Hoc comparison
+
+
+
+$V(\bar{y}_{srs})$: need to use the **stratified** sample to get an unbiased estimate of population measurement's variance $S^2$
+
+
+**2.** Estimate the population **sum of squares** values from your stratified data's ANOVA:
+$$
+\hat{S}^2 = \dfrac{\widehat{SST}}{N-1} = \dfrac{\widehat{SSB}+ \widehat{SSW}}{N-1} 
+$$
+where $SS$ are estimated from the stratfied data as
+$$\widehat{SSW} = (N-H) msw_{sample} \ \ \ \ \ \  \widehat{SSB} = \sum_{h=1}^H N_h(\bar{y}_{h} - \bar{y}_{str})^2$$
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+Compare stratified to SRS when estimating the mean number of large farms (`largef92`) in 1992 in the US:
+```{r}
+# Design effect comparing stratified to SRS
+svymean(~largef92, design_strat, deff=T) 
+```
+
+**Let's estimate this DEff "by hand"**
+
+- Numerator is $3.5577^2$
+
+- Denominator: need to estimate $S^2$ (SD of `largef92` in the **population**)
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+Here we model `largef92` as a function of `region` (**strata**) and use `anova` to get the **sample anova table**:
+```{r}
+largef92_lm <- lm(largef92 ~ region, data=agstrat)
+# "Residuals" == WITHIN strata
+# region (strata) == BETWEEN strata
+anova(largef92_lm)
+```
+
+
+$$msw_{sample} = 4205$$
+
+```{r, include = FALSE}
+(3078-4)*4205
+```
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+**Between Strata** sum of squares:
+
+- Overall estimated mean from stratifed estimator:
+```{r}
+ybar_str <- 56.6980
+```
+
+- Within strata mean estimates:
+```{r}
+mn_region <- agstrat %>% 
+                group_by(region) %>%
+                summarize(mean(largef92)) %>%
+                pull()
+mn_region
+```
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: Design effect
+
+
+
+
+- The estimated population variance is then 
+$$
+\hat{S}^2 = \dfrac{2201681 + 12926170}{3078-1} = 4911.834
+$$
+
+- The design effect for estimating the population mean `largef92` using this stratified sample is 
+$$
+DEff =  \dfrac{3.5577^2}{(1-300/3078)4911.834/300} \approx 0.86
+$$

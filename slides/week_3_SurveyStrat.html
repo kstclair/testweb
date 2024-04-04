@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>survey package: stratified designs</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# <code>survey</code> package: stratified designs
+## Week 3
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+## Design object: Stratified sampling
+
+
+```r
+&gt; library(survey)
+&gt; my_design &lt;- svydesign(id, fpc, weights, strata, mydata)
+```
+
+- `id` defines the sampling units
+
+- `fpc` gives `\(N_h\)` or `\(n_n/N_n\)` for fpc correction
+
+- `weights` sampling weights `\(N_h/n_h\)`
+
+- `strata` gives the stratification variable(s)
+  - if more than one variable defines strata use `strat = ~var1 + var2`
+
+
+---
+
+## Lohr Examples 3.2 and 3.6
+
+The file  `agsrs.csv` contains farm data collected from a SRS of `\(n=300\)`  counties from `\(N=3078\)` in the US. 
+
+
+```r
+&gt; library(SDaA)
+&gt; str(agstrat)    # looks at the ``structure'' of the data frame's variables
+'data.frame':	300 obs. of  17 variables:
+ $ county  : Factor w/ 261 levels "ALEXANDER COUNTY",..: 180 115 254 241 175 37 186 94 243 212 ...
+ $ state   : Factor w/ 46 levels "AL","AR","AZ",..: 27 13 32 20 44 21 37 10 22 14 ...
+ $ acres92 : int  297326 124694 246938 206781 78772 210897 507101 332358 402202 535359 ...
+ $ acres87 : int  332862 131481 263457 190251 85201 229537 552844 337990 396638 503582 ...
+ $ acres82 : int  319619 139111 268434 197055 89331 213105 541015 355823 400466 513458 ...
+ $ farms92 : int  725 658 1582 1164 448 583 321 986 1249 488 ...
+ $ farms87 : int  857 671 1734 1278 483 699 371 1065 1251 518 ...
+ $ farms82 : int  865 751 1866 1464 527 693 341 1208 1320 571 ...
+ $ largef92: int  54 14 20 23 6 34 163 56 86 216 ...
+ $ largef87: int  54 13 19 17 5 32 180 36 78 204 ...
+ $ largef82: int  42 14 16 9 5 23 176 42 69 193 ...
+ $ smallf92: int  58 42 175 56 56 8 10 90 42 16 ...
+ $ smallf87: int  67 36 186 66 49 19 24 115 38 37 ...
+ $ smallf82: int  48 38 184 55 48 13 16 132 28 24 ...
+ $ region  : Factor w/ 4 levels "NC","NE","S",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ rn      : int  805 241 913 478 1028 496 969 42 676 383 ...
+ $ weight  : num  10.2 10.2 10.2 10.2 10.2 ...
+```
+
+---
+
+## Design
+
+We need to add **stratum** population sizes to the data frame:
+
+
+```r
+&gt; # recode maps pop sizes to the right regions
+&gt; library(dplyr)
+&gt; agstrat$N &lt;- recode(agstrat$region, 
++                     NC = 1054, 
++                     NE = 220, 
++                     S = 1382, 
++                     W = 422)
+&gt; # check if recoding worked:
+&gt; agstrat %&gt;% 
++   group_by(region) %&gt;% 
++   summarize(min(N), max(N))
+# A tibble: 4 x 3
+  region `min(N)` `max(N)`
+  &lt;fct&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+1 NC         1054     1054
+2 NE          220      220
+3 S          1382     1382
+4 W           422      422
+```
+
+
+
+---
+
+## Design
+
+We need to add **stratum** sampling weights `\(N_h/n_h\)` to the data frame:
+
+
+```r
+&gt; # sample sizes:
+&gt; table(agstrat$region)
+
+ NC  NE   S   W 
+103  21 135  41 
+&gt; # recode maps sample sizes to the right regions
+&gt; agstrat &lt;- agstrat %&gt;% 
++   group_by(region) %&gt;% 
++   mutate(n = n())  %&gt;% ungroup()
+&gt; agstrat$n[1:180]
+  [1] 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103
+ [19] 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103
+ [37] 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103
+ [55] 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103
+ [73] 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103 103
+ [91] 103 103 103 103 103 103 103 103 103 103 103 103 103  21  21  21  21  21
+[109]  21  21  21  21  21  21  21  21  21  21  21  21  21  21  21  21 135 135
+[127] 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135
+[145] 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135
+[163] 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135 135
+```
+
+
+
+---
+
+## Design
+
+We need to add **stratum** sampling weights `\(N_h/n_h\)` to the data frame:
+
+
+```r
+&gt; # add weights
+&gt; agstrat$wts &lt;- agstrat$N/agstrat$n
+&gt; # check work:
+&gt; agstrat %&gt;% 
++   group_by(region) %&gt;% 
++   summarize(min(wts), max(wts))
+# A tibble: 4 x 3
+  region `min(wts)` `max(wts)`
+  &lt;fct&gt;       &lt;dbl&gt;      &lt;dbl&gt;
+1 NC           10.2       10.2
+2 NE           10.5       10.5
+3 S            10.2       10.2
+4 W            10.3       10.3
+```
+
+
+---
+## Design
+
+
+```r
+&gt; library(survey)
+&gt; design_strat &lt;- svydesign(id= ~1, 
++                         fpc= ~N, 
++                         weights= ~wts, 
++                         strata = ~region,
++                         data= agstrat)
+&gt; summary(design_strat)
+Stratified Independent Sampling design
+svydesign(id = ~1, fpc = ~N, weights = ~wts, strata = ~region, 
+    data = agstrat)
+Probabilities:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.09545 0.09768 0.09768 0.09747 0.09772 0.09772 
+Stratum Sizes: 
+            NC NE   S  W
+obs        103 21 135 41
+design.PSU 103 21 135 41
+actual.PSU 103 21 135 41
+Population stratum sizes (PSUs): 
+  NC   NE    S    W 
+1054  220 1382  422 
+Data variables:
+ [1] "county"   "state"    "acres92"  "acres87"  "acres82"  "farms92" 
+ [7] "farms87"  "farms82"  "largef92" "largef87" "largef82" "smallf92"
+[13] "smallf87" "smallf82" "region"   "rn"       "weight"   "N"       
+[19] "n"        "wts"     
+```
+
+
+
+
+
+---
+
+## Lohr Examples 3.2 and 3.6
+
+The variable `acres92`  records the number of farming acres in a county in 1992.
+
+
+```r
+&gt; # SRS estimate/SE of total farm acres
+&gt; svytotal(~acres92, design_strat)  
+            total       SE
+acres92 909736035 50417248
+```
+
+
+```r
+&gt; mean_obj &lt;- svymean(~acres92, design_strat)
+&gt; mean_obj
+          mean    SE
+acres92 295561 16380
+&gt; confint(mean_obj, df = degf(design_strat))
+         2.5 %   97.5 %
+acres92 263325 327796.5
+```
+
+
+---
+
+## Lohr Examples 3.2 and 3.6
+
+What proportion of counties in the US have fewer than 200,000 farming acres?
+
+
+```r
+&gt; agstrat$lt200k92&lt;- ifelse(agsrs$acres92 &lt; 200000, 
++                         "less than 200k", "greater than 200k") 
+&gt; design_strat &lt;- update(design_strat, lt200k92 = agstrat$lt200k92)
+&gt; svymean(~lt200k92, design_strat)
+                             mean     SE
+lt200k92greater than 200k 0.48973 0.0273
+lt200k92less than 200k    0.51027 0.0273
+```
+
+
+
+---
+
+## Lohr Examples 3.2 and 3.6: estimating within strata
+
+
+```r
+&gt; # estimated region means
+&gt; region_mean &lt;- svyby(~acres92, # variable
++                    ~region,  # strata
++                    design_strat, # design
++                    svymean)  # gets mean estimates
+&gt; region_mean   # SRS estimates for each region
+   region   acres92       se
+NC     NC 300504.16 16107.59
+NE     NE  97629.81 18149.49
+S       S 211315.04 18925.35
+W       W 662295.51 93403.65
+&gt; confint(region_mean,df=degf(design_strat))
+       2.5 %   97.5 %
+NC 268804.25 332204.1
+NE  61911.41 133348.2
+S  174069.74 248560.3
+W  478476.12 846114.9
+```
+
+---
+
+## Lohr Examples 3.2 and 3.6: stratified vs SRS
+
+The **design effect** of a design compares it's `\(SE^2\)` to what you'd expect from a SRS:
+
+`$$DEff = \dfrac{V(\hat{t}_{str})}{V(\hat{t}_{SRS})} \approx 0.7945$$`
+
+
+```r
+&gt; # Design effect estimated from the stratified sample:
+&gt; svytotal(~acres92, design_strat, deff=T) 
+            total        SE   DEff
+acres92 909736035  50417248 0.7945
+```
+
+The variance for estimating total is about 20% lower under a stratified design compared to an *equal sized* SRS.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

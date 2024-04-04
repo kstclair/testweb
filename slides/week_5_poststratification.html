@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Poststratification</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stat 260, St. Clair" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Poststratification
+## Week 5 (4.4)
+### Stat 260, St. Clair
+
+---
+
+
+
+
+
+
+
+### Idea: Population
+
+You have a population with **known** stratum fractions:
+`$$\dfrac{N_1}{N}, \dfrac{N_2}{N}, \dotsc, \dfrac{N_H}{N}$$`
+
+---
+
+
+### Idea: Sample Design
+
+You **don't** have the stratification variable in the sampling frame. 
+
+You take a **SRS** of size `\(n\)` and observed
+
+  - response `\(y_i\)`
+  
+  - stratification variable
+
+---
+
+### Idea: Poststratification
+
+**After** the SRS, divide the SRS into strata and calibrate estimates of `\(t_y, \bar{y}_{\mathcal{U}}\)` based on known population stratum characteristics
+
+
+- divide responses by stratum
+
+- get *domain* estimates for each stratum
+
+- combine domain estimates like you would in a stratified sample
+
+
+---
+
+### Benefits
+
+- Nonresponse: if related to stratum, poststratification can reduce non-response bias IF
+  - within stratum: non-respondents `\(\approx\)` respondents
+  
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+- If `\(n\)` is large, can increase precision over SRS if stratification *would* have been beneficial
+
+
+
+
+---
+
+### Poststratification estimation: mean
+
+- **Parameter**  `\(\bar{y}_{\mathcal{U}}\)` 
+
+
+- **Estimator** 
+`$$\bar{y}_{post} = \sum_{h=1}^H \frac{N_h}{N} \bar{y}_h$$`
+
+- **SE**:
+`$$SE(\bar{y}_{post} ) \approx \sqrt{\sum_{h=1}^H \left(\frac{N_h}{N}\right)^2 \left( 1- \frac{n}{N}\right) \left( \frac{n}{n-1}\right)\left( \frac{n_h - 1}{n_h}\right)\frac{s^2_h}{n_h}} \\
+\approx \sqrt{\left( 1- \frac{n}{N}\right)\sum_{h=1}^H \frac{N_h}{N}\frac{s^2_h}{n} }$$`
+
+---
+
+### Poststratification estimation: proportion
+
+
+- **Parameter**  `\(p\)` 
+
+
+- **Estimator** 
+`$$\hat{p}_{post} =\sum_{h=1}^H \frac{N_h}{N} \hat{p}_h$$`
+
+- **SE**: same as mean but with `\(s^2_h = \dfrac{n_h}{n_h - 1}\hat{p}_h(1-\hat{p}_h)\)`
+
+
+
+---
+
+### Poststratification estimation: total
+
+- **Parameter**  `\(t = N\bar{y}_{\mathcal{U}}\)` 
+
+
+- **Estimator** 
+`$$\hat{t}_{post}= N\bar{y}_{post} = \sum_{h=1}^H N_h \bar{y}_h$$`
+
+- **SE**:
+`$$SE(\hat{t}_{post}) = N SE(\bar{y}_{post})$$`
+
+---
+
+### Example
+The population of$N=1,500$ students. We have a SRS of 200 students and obtained 135 responses to the question *How many hours per week do you devote to study outside of regular class time?* 
+
+|  Female | Male | all 
+---- | ------ | ---- | ----
+`\(n_h\)` | 104 | 31 | 135 
+`\(\bar{y}_h\)` | 12.38  | 8.03 | 11.38
+`\(s_h\)` | 6.68 | 5.50 | 6.68
+
+SRS estimate/SE of mean study hours per week?
+
+
+---
+
+### Example
+
+|  Female | Male | all 
+---- | ------ | ---- | ----
+`\(N_h\)` | 900 | 600 | 1500
+`\(n_h\)` | 104 | 31 | 135 
+`\(\bar{y}_h\)` | 12.38  | 8.03 | 11.38
+`\(s_h\)` | 6.68 | 5.50 | 6.68
+
+Poststratified estimate/SE of mean study hours per week?
+
+
+
+---
+
+### Example
+
+
+|  Female | Male | all 
+---- | ------ | ---- | ----
+`\(N_h\)` | 900 | 600 | 1500
+`\(n_h\)` | 104 | 31 | 135 
+`\(\bar{y}_h\)` | 12.38  | 8.03 | 11.38
+`\(s_h\)` | 6.68 | 5.50 | 6.68
+
+`$$\bar{y} = 11.38 \ \ \ SE(\bar{y}) = 0.55$$`
+`$$\bar{y}_{post} = 10.64 \ \ \ SE(\bar{y}_{post}) = 0.51$$`
+
+Why is the poststratified estimator of mean study hours lower than the SRS?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
